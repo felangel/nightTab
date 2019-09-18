@@ -3,185 +3,100 @@ var bookmarks = (function() {
   var mod = {};
 
   mod.all = [{
-    display: "icon",
-    letter: "DEV",
-    icon: {
-      name: "code",
-      prefix: "fas",
-      label: "Code"
-    },
-    name: "Devdocs",
-    url: "http://devdocs.io/",
-    accent: {
-      override: false,
-      color: {
-        r: null,
-        g: null,
-        b: null
-      }
-    },
-    timeStamp: 1546453101749
+    name: "Alpha",
+    items: [{
+      display: "letter",
+      letter: "GIT",
+      icon: {
+        name: "github",
+        prefix: "fab",
+        label: "GitHub"
+      },
+      name: "Github",
+      url: "https://github.com/",
+      accent: {
+        override: false,
+        color: {
+          r: null,
+          g: null,
+          b: null
+        }
+      },
+      timeStamp: 1546453108926
+    }, {
+      display: "letter",
+      letter: "GM",
+      icon: {
+        name: "envelope",
+        prefix: "fas",
+        label: "Envelope"
+      },
+      name: "Gmail",
+      url: "https://mail.google.com/",
+      accent: {
+        override: false,
+        color: {
+          r: null,
+          g: null,
+          b: null
+        }
+      },
+      timeStamp: 1546453110265
+    }]
   }, {
-    display: "icon",
-    letter: "AS",
-    icon: {
-      name: "dice-d20",
-      prefix: "fas",
-      label: "Dice D20"
-    },
-    name: "awesomeSheet",
-    url: "https://zombiefox.github.io/awesomeSheet/",
-    accent: {
-      override: false,
-      color: {
-        r: null,
-        g: null,
-        b: null
-      }
-    },
-    timeStamp: 1546453104010
-  }, {
-    display: "icon",
-    letter: "N",
-    icon: {
-      name: "film",
-      prefix: "fas",
-      label: "Film"
-    },
-    name: "Netflix",
-    url: "https://www.netflix.com/",
-    accent: {
-      override: false,
-      color: {
-        r: null,
-        g: null,
-        b: null
-      }
-    },
-    timeStamp: 1546453104460
-  }, {
-    display: "letter",
-    letter: "AZ",
-    icon: {
-      name: "amazon",
-      prefix: "fab",
-      label: "Amazon"
-    },
-    name: "Amazon",
-    url: "https://www.amazon.co.uk/",
-    accent: {
-      override: false,
-      color: {
-        r: null,
-        g: null,
-        b: null
-      }
-    },
-    timeStamp: 1546453107633
-  }, {
-    display: "icon",
-    letter: "YT",
-    icon: {
-      name: "youtube",
-      prefix: "fab",
-      label: "YouTube"
-    },
-    name: "Youtube",
-    url: "https://www.youtube.com/",
-    accent: {
-      override: false,
-      color: {
-        r: null,
-        g: null,
-        b: null
-      }
-    },
-    timeStamp: 1546453108071
-  }, {
-    display: "letter",
-    letter: "GIT",
-    icon: {
-      name: "github",
-      prefix: "fab",
-      label: "GitHub"
-    },
-    name: "Github",
-    url: "https://github.com/",
-    accent: {
-      override: false,
-      color: {
-        r: null,
-        g: null,
-        b: null
-      }
-    },
-    timeStamp: 1546453108926
-  }, {
-    display: "letter",
-    letter: "GM",
-    icon: {
-      name: "envelope",
-      prefix: "fas",
-      label: "Envelope"
-    },
-    name: "Gmail",
-    url: "https://mail.google.com/",
-    accent: {
-      override: false,
-      color: {
-        r: null,
-        g: null,
-        b: null
-      }
-    },
-    timeStamp: 1546453110265
-  }, {
-    display: "icon",
-    letter: "R",
-    icon: {
-      name: "reddit-alien",
-      prefix: "fab",
-      label: "reddit Alien"
-    },
-    name: "Reddit",
-    url: "https://www.reddit.com/",
-    accent: {
-      override: false,
-      color: {
-        r: null,
-        g: null,
-        b: null
-      }
-    },
-    timeStamp: 1546453111491
-  }, {
-    display: "letter",
-    letter: "DR",
-    icon: {
-      name: null,
-      prefix: null,
-      label: null
-    },
-    name: "Drive",
-    url: "https://drive.google.com/drive/",
-    accent: {
-      override: false,
-      color: {
-        r: null,
-        g: null,
-        b: null
-      }
-    },
-    timeStamp: 1546453111953
+    name: "Beta",
+    items: [{
+      display: "icon",
+      letter: "R",
+      icon: {
+        name: "reddit-alien",
+        prefix: "fab",
+        label: "reddit Alien"
+      },
+      name: "Reddit",
+      url: "https://www.reddit.com/",
+      accent: {
+        override: false,
+        color: {
+          r: null,
+          g: null,
+          b: null
+        }
+      },
+      timeStamp: 1546453111491
+    }, {
+      display: "letter",
+      letter: "DR",
+      icon: {
+        name: null,
+        prefix: null,
+        label: null
+      },
+      name: "Drive",
+      url: "https://drive.google.com/drive/",
+      accent: {
+        override: false,
+        color: {
+          r: null,
+          g: null,
+          b: null
+        }
+      },
+      timeStamp: 1546453111953
+    }]
   }];
 
   mod.get = function(data) {
     var _singleBookmark = function() {
       var found = false;
-      for (var i = 0; i < mod.all.length; i++) {
-        if (mod.all[i].timeStamp === data.timeStamp) {
-          found = mod.all[i];
-        };
+      if (mod.all.length > 0) {
+        mod.all.forEach(function(arrayItem, index) {
+          arrayItem.forEach(function(arrayItem, index) {
+            if (arrayItem[index].timeStamp === data.timeStamp) {
+              found = arrayItem[index];
+            };
+          });
+        });
       };
       return found;
     };

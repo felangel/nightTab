@@ -1,7 +1,7 @@
 .link {
   display: none;
   position: relative;
-  flex-direction: row;
+  flex-direction: column;
   z-index: var(--z-index-link);
 }
 
@@ -24,6 +24,9 @@
 .link-area {
   padding-left: calc(var(--layout-space) * var(--layout-padding));
   padding-right: calc(var(--layout-space) * var(--layout-padding));
+}
+
+.link-area-list {
   font-size: calc(var(--link-item-size) * 1);
   position: relative;
   width: var(--link-area-width);
