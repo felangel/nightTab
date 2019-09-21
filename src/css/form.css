@@ -1,17 +1,17 @@
 /* select */
 select {
   background-color: rgb(var(--theme-gray-02));
-  background-image: 
+  background-image:
     linear-gradient(45deg, transparent 50%, rgb(var(--form-input-text)) 50%),
     linear-gradient(135deg, rgb(var(--form-input-text)) 50%, transparent 50%);
-  background-position: 
-    calc(100% - calc(var(--form-arrow-size) * 3)) calc(50% + calc(var(--form-arrow-size) / 6)),
-    calc(100% - calc(var(--form-arrow-size) * 2)) calc(50% + calc(var(--form-arrow-size) / 6));
+  background-position:
+    calc(100% - calc(var(--form-arrow-size) * 5)) calc(50% + calc(var(--form-arrow-size) / 6)),
+    calc(100% - calc(var(--form-arrow-size) * 4)) calc(50% + calc(var(--form-arrow-size) / 6));
   background-size:
     var(--form-arrow-size) var(--form-arrow-size),
     var(--form-arrow-size) var(--form-arrow-size);
   background-repeat: no-repeat;
-  padding: 0 calc(var(--form-arrow-size) * 6) 0 1em;
+  padding: 0 calc(var(--form-arrow-size) * 10) 0 1em;
   margin: 0 0 1em 0;
   color: rgb(var(--form-input-text));
   font-size: 1em;
@@ -30,21 +30,21 @@ select {
   appearance: none;
 }
 
-.x>path {
-  fill: var(--theme-style-text);
-}
-
 select:hover {
-  background-image: linear-gradient(45deg, transparent 50%, rgb(var(--form-input-text-hover)) 50%), linear-gradient(135deg, rgb(var(--form-input-text-hover)) 50%, transparent 50%);
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgb(var(--form-input-text-hover)) 50%),
+    linear-gradient(135deg, rgb(var(--form-input-text-hover)) 50%, transparent 50%);
   background-color: rgb(var(--theme-gray-03));
   color: rgb(var(--form-input-text-hover));
   outline: none;
   box-shadow: 0 0 0 var(--layout-line-width) rgb(var(--theme-gray-06));
 }
 
-select:active,
-select:focus {
-  background-image: linear-gradient(45deg, transparent 50%, rgb(var(--form-input-text-focus)) 50%), linear-gradient(135deg, rgb(var(--form-input-text-focus)) 50%, transparent 50%);
+select:focus,
+select:active {
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgb(var(--form-input-text-focus)) 50%),
+    linear-gradient(135deg, rgb(var(--form-input-text-focus)) 50%, transparent 50%);
   background-color: rgb(var(--theme-gray-01));
   color: rgb(var(--form-input-text-focus));
   outline: none;
