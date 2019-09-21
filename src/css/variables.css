@@ -87,6 +87,7 @@
   --form-feedback-text-disabled: var(--theme-gray-04);
   --form-helper: var(--theme-gray-12);
   --form-helper-disabled: var(--theme-gray-06);
+  --form-arrow-size: 6px;
   /* button */
   --button-text: var(--theme-gray-12);
   --button-text-hover-focus: var(--theme-style-text);
