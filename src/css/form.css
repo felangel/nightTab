@@ -42,6 +42,7 @@ select:hover {
   box-shadow: 0 0 0 var(--layout-line-width) rgb(var(--theme-gray-06));
 }
 
+select:active,
 select:focus {
   background-image: linear-gradient(45deg, transparent 50%, rgb(var(--form-input-text-focus)) 50%), linear-gradient(135deg, rgb(var(--form-input-text-focus)) 50%, transparent 50%);
   background-color: rgb(var(--theme-gray-01));
@@ -49,15 +50,6 @@ select:focus {
   outline: none;
   z-index: 2;
   box-shadow: 0 0 0 var(--layout-line-width) rgb(var(--theme-accent)), 0 0 0 calc(var(--layout-line-width) * 2) rgba(var(--theme-accent), 0.25);
-}
-
-select:active,
-select:active {
-  background-color: rgb(var(--theme-gray-04));
-  border-bottom-color: rgb(var(--theme-accent));
-  color: rgb(var(--button-text-active));
-  transition: none;
-  text-decoration: none;
 }
 
 select:disabled,
