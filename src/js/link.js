@@ -33,9 +33,9 @@ var link = (function() {
   mod.edit = {
     toggle: function() {
       if (state.get().link.edit) {
-        mod.edit.close()
+        mod.edit.close();
       } else {
-        mod.edit.open()
+        mod.edit.open();
       };
     },
     open: function() {
@@ -125,6 +125,13 @@ var link = (function() {
   var stagedLink = {};
 
   stagedLink.data = {
+    group: {
+      index: null,
+      new: {
+        active: null,
+        name: null
+      }
+    },
     display: null,
     letter: null,
     icon: {
@@ -146,11 +153,16 @@ var link = (function() {
   };
 
   stagedLink.init = function() {
+    stagedLink.data.group.index = 0;
+    stagedLink.data.group.new.active = false;
     stagedLink.data.display = "letter";
     stagedLink.data.accent.override = false;
   };
 
   stagedLink.reset = function() {
+    stagedLink.data.group.index = null;
+    stagedLink.data.group.new.active = null;
+    stagedLink.data.group.new.name = null;
     stagedLink.data.display = null;
     stagedLink.data.letter = null;
     stagedLink.data.icon.name = null;
@@ -646,6 +658,16 @@ var link = (function() {
     var form = helper.node("form|class:link-form");
     var fieldset = helper.node("fieldset");
 
+    // group
+    var groupSelectWrap = helper.node("div|class:input-wrap");
+    var groupLabel = helper.node("label:Group|for:xxx");
+    var groupSelect = helper.node("select|id:xxx,class:yyy mb-0");
+    var groupNewFormIndent = helper.node("div|class:form-indent");
+    var groupNew = helper.node("option:New group|value:New Group");
+    var groupNewInputWrap = helper.node("div|class:input-wrap");
+    var groupNewLabel = helper.node("label:New group name|class:disabled,for:link-form-input-new-group");
+    var groupNewInput = helper.node("input|type:text,class:link-form-input-new-group mb-0,id:link-form-input-new-group,placeholder:Alpha group,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false,disabled");
+
     // letter
     var displayLetterRadioWrap = helper.node("div|class:input-wrap");
     var displayLetterRadio = helper.node("input|class:link-form-input-display-letter,id:link-form-input-display-letter,type:radio,name:link-form-input-display,tabindex:1,checked,value:letter");
@@ -700,6 +722,20 @@ var link = (function() {
     var accentColorHex = helper.node("input|id:link-form-input-accent-hex,class:form-group-item-half link-form-input-accent-hex mb-0,type:text,placeholder:Hex code,value:#000000,tabindex:1,maxlength:7,disabled");
     var accentColorInputHelper = helper.node("p:Use this colour to override the global Accent colour.|class:link-form-input-accent-helper form-helper small muted disabled");
 
+    groupSelectWrap.appendChild(groupLabel);
+    groupSelectWrap.appendChild(groupSelect);
+    bookmarks.get().forEach(function(arrayItem, index) {
+      var option = helper.node("option:" + arrayItem.name + "|value:" + arrayItem.name);
+      groupSelect.appendChild(option);
+    });
+    groupSelect.appendChild(groupNew);
+    groupNewInputWrap.appendChild(groupNewLabel);
+    groupNewInputWrap.appendChild(groupNewInput);
+    groupNewFormIndent.appendChild(groupNewInputWrap)
+    fieldset.appendChild(groupSelectWrap);
+    fieldset.appendChild(groupNewFormIndent);
+    fieldset.appendChild(helper.node("hr"));
+
     displayLetterRadioWrap.appendChild(displayLetterRadio);
     displayLetterRadioWrap.appendChild(displayLetterLable);
     fieldset.appendChild(displayLetterRadioWrap);
@@ -741,6 +777,21 @@ var link = (function() {
     fieldset.appendChild(accentColorFormIndent);
     form.appendChild(fieldset);
 
+    groupSelect.addEventListener("change", function(event) {
+      stagedLink.data.group.index = this.selectedIndex;
+      if (this.selectedIndex > (bookmarks.get().length - 1)) {
+        stagedLink.data.group.new.active = true;
+        helper.removeClass(groupNewLabel, "disabled");
+        groupNewInput.removeAttribute("disabled");
+      } else {
+        stagedLink.data.group.new.active = false;
+        helper.addClass(groupNewLabel, "disabled");
+        groupNewInput.setAttribute("disabled", "");
+      };
+    }, false);
+    groupNewInput.addEventListener("input", function(event) {
+      stagedLink.data.group.new.name = this.value;
+    }, false);
     displayLetterRadio.addEventListener("change", function(event) {
       stagedLink.data.display = this.value;
     }, false);
@@ -795,7 +846,7 @@ var link = (function() {
       displayLetterInput.removeAttribute("disabled");
       displayIconInput.setAttribute("disabled", "");
       displayIconFormGroupText.setAttribute("disabled", "");
-      helper.addClass(form.querySelector(".link-form-input-icon-helper"), "disabled");
+      helper.addClass(displayIconHelper, "disabled");
       displayIconFormGroupClear.setAttribute("disabled", "");
       displayIconFormGroupText.tabIndex = -1;
     }, false);
@@ -803,7 +854,7 @@ var link = (function() {
       displayLetterInput.setAttribute("disabled", "");
       displayIconInput.removeAttribute("disabled");
       displayIconFormGroupText.removeAttribute("disabled");
-      helper.removeClass(form.querySelector(".link-form-input-icon-helper"), "disabled");
+      helper.removeClass(displayIconHelper, "disabled");
       displayIconFormGroupClear.removeAttribute("disabled");
       displayIconFormGroupText.tabIndex = 1;
     }, false);
