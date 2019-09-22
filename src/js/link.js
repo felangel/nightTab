@@ -124,7 +124,7 @@ var link = (function() {
 
   var stagedLink = {};
 
-  stagedLink.data = {
+  stagedLink.position = {
     group: {
       index: null,
       new: {
@@ -132,6 +132,12 @@ var link = (function() {
         name: null
       }
     },
+    item: {
+      index: null
+    }
+  };
+
+  stagedLink.data = {
     display: null,
     letter: null,
     icon: {
@@ -153,8 +159,8 @@ var link = (function() {
   };
 
   stagedLink.init = function() {
-    stagedLink.data.group.index = 0;
-    stagedLink.data.group.new.active = false;
+    stagedLink.position.group.index = 0;
+    stagedLink.position.group.new.active = false;
     stagedLink.data.display = "letter";
     stagedLink.data.accent.override = false;
   };
@@ -217,9 +223,9 @@ var link = (function() {
   };
 
   render.clear = function() {
-    var linkArea = helper.e(".link-area");
-    while (linkArea.lastChild) {
-      linkArea.removeChild(linkArea.lastChild);
+    var link = helper.e(".link");
+    while (link.lastChild) {
+      link.removeChild(link.lastChild);
     };
   };
 
@@ -338,6 +344,7 @@ var link = (function() {
         };
       };
       var linkItem = helper.makeNode(linkItemOptions);
+      linkItem.index = index;
       var linkPanelFrontOptions = {
         tag: "a",
         attr: [{
@@ -524,8 +531,8 @@ var link = (function() {
 
       return linkItem;
     },
-    edit: function(bookmarkData) {
-      stagedLink.data = JSON.parse(JSON.stringify(bookmarkData));
+    edit: function(data) {
+      stagedLink.data = JSON.parse(JSON.stringify(data));
       var form = render.form();
       if (stagedLink.data.display == "letter" || stagedLink.data.display == null) {
         form.querySelector(".link-form-input-letter").removeAttribute("disabled");
@@ -891,7 +898,7 @@ var link = (function() {
         heading: "Add a new bookmark",
         successAction: function() {
           stagedLink.data.timeStamp = new Date().getTime();
-          bookmarks.add(JSON.parse(JSON.stringify(stagedLink.data)));
+          bookmarks.mod.add.link(JSON.parse(JSON.stringify(stagedLink.data)));
           data.save();
           mod.add.close();
           render.clear();

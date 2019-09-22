@@ -113,11 +113,24 @@ var bookmarks = (function() {
     };
   };
 
-  mod.add = function(data) {
-    mod.all.push(data);
+  mod.add = {
+    link: function(data) {
+      if (data.group.new.active) {
+        mod.add.group(data);
+      };
+      mod.all[data.group.index].items.push(data);
+    },
+    group: function(data) {
+      var count = data.group.index + 1;
+      mod.all.push({
+        name: data.group.new.name || "Group " + count,
+        items: []
+      });
+    }
   };
 
   mod.edit = function(data) {
+    console.log(data);
     for (var i = 0; i < mod.all.length; i++) {
       if (mod.all[i].timeStamp === data.timeStamp) {
         mod.all[i] = data;
@@ -156,10 +169,6 @@ var bookmarks = (function() {
     return mod.get(data);
   };
 
-  var add = function(data) {
-    mod.add(data);
-  };
-
   var edit = function(data) {
     mod.edit(data);
   };
@@ -187,7 +196,6 @@ var bookmarks = (function() {
     init: init,
     mod: mod,
     get: get,
-    add: add,
     edit: edit,
     sort: sort,
     move: move,
