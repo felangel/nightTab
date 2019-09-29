@@ -122,38 +122,37 @@ var link = (function() {
 
   var _previousFocus = null;
 
-  var stagedLink = {};
-
-  stagedLink.position = {
-    group: {
-      index: null,
-      new: {
-        active: null,
-        name: null
+  var stagedLink = {
+    position: {
+      group: {
+        index: null,
+        new: {
+          active: null,
+          name: null
+        }
+      },
+      item: {
+        index: null
       }
     },
-    item: {
-      index: null
-    }
-  };
-
-  stagedLink.data = {
-    display: null,
-    letter: null,
-    icon: {
+    link: {
+      display: null,
+      letter: null,
+      icon: {
+        name: null,
+        prefix: null,
+        label: null
+      },
       name: null,
-      prefix: null,
-      label: null
-    },
-    name: null,
-    url: null,
-    timeStamp: null,
-    accent: {
-      override: null,
-      color: {
-        r: null,
-        g: null,
-        b: null
+      url: null,
+      timeStamp: null,
+      accent: {
+        override: null,
+        color: {
+          r: null,
+          g: null,
+          b: null
+        }
       }
     }
   };
@@ -161,26 +160,26 @@ var link = (function() {
   stagedLink.init = function() {
     stagedLink.position.group.index = 0;
     stagedLink.position.group.new.active = false;
-    stagedLink.data.display = "letter";
-    stagedLink.data.accent.override = false;
+    stagedLink.link.display = "letter";
+    stagedLink.link.accent.override = false;
   };
 
   stagedLink.reset = function() {
-    stagedLink.data.group.index = null;
-    stagedLink.data.group.new.active = null;
-    stagedLink.data.group.new.name = null;
-    stagedLink.data.display = null;
-    stagedLink.data.letter = null;
-    stagedLink.data.icon.name = null;
-    stagedLink.data.icon.prefix = null;
-    stagedLink.data.icon.label = null;
-    stagedLink.data.name = null;
-    stagedLink.data.url = null;
-    stagedLink.data.timeStamp = null;
-    stagedLink.data.accent.override = null;
-    stagedLink.data.accent.color.r = null;
-    stagedLink.data.accent.color.g = null;
-    stagedLink.data.accent.color.b = null;
+    stagedLink.position.group.index = null;
+    stagedLink.position.group.new.active = null;
+    stagedLink.position.group.new.name = null;
+    stagedLink.link.display = null;
+    stagedLink.link.letter = null;
+    stagedLink.link.icon.name = null;
+    stagedLink.link.icon.prefix = null;
+    stagedLink.link.icon.label = null;
+    stagedLink.link.name = null;
+    stagedLink.link.url = null;
+    stagedLink.link.timeStamp = null;
+    stagedLink.link.accent.override = null;
+    stagedLink.link.accent.color.r = null;
+    stagedLink.link.accent.color.g = null;
+    stagedLink.link.accent.color.b = null;
   };
 
   var render = {};
@@ -247,7 +246,7 @@ var link = (function() {
       };
       var action = {
         bookmarks: function(data) {
-          console.log(data);
+          console.log("group", data);
           data.forEach(function(arrayItem, index) {
             console.log(arrayItem);
             var linkArea = helper.node("div|class:link-area");
@@ -326,6 +325,7 @@ var link = (function() {
           value: "link-item"
         }]
       };
+      console.log("\t link", data);
       if (data.accent.override) {
         linkItemOptions.attr.push({
           key: "style",
@@ -532,9 +532,9 @@ var link = (function() {
       return linkItem;
     },
     edit: function(data) {
-      stagedLink.data = JSON.parse(JSON.stringify(data));
+      stagedLink.link = JSON.parse(JSON.stringify(data));
       var form = render.form();
-      if (stagedLink.data.display == "letter" || stagedLink.data.display == null) {
+      if (stagedLink.link.display == "letter" || stagedLink.link.display == null) {
         form.querySelector(".link-form-input-letter").removeAttribute("disabled");
         form.querySelector(".link-form-input-icon").setAttribute("disabled", "");
         form.querySelector(".form-group-text").setAttribute("disabled", "");
@@ -542,7 +542,7 @@ var link = (function() {
         helper.addClass(form.querySelector(".link-form-input-icon-helper"), "disabled");
         form.querySelector(".link-form-icon-clear").setAttribute("disabled", "");
         form.querySelector(".link-form-text-icon").tabIndex = -1;
-      } else if (stagedLink.data.display == "icon") {
+      } else if (stagedLink.link.display == "icon") {
         form.querySelector(".link-form-input-letter").setAttribute("disabled", "");
         form.querySelector(".link-form-input-icon").removeAttribute("disabled");
         form.querySelector(".form-group-text").removeAttribute("disabled");
@@ -552,14 +552,14 @@ var link = (function() {
         form.querySelector(".link-form-input-display-icon").checked = true;
         form.querySelector(".link-form-text-icon").tabIndex = 1;
       };
-      if (stagedLink.data.icon.name != null && stagedLink.data.icon.prefix != null && stagedLink.data.icon.label != null) {
-        form.querySelector(".link-form-text-icon").appendChild(helper.node("span|class:link-form-icon " + stagedLink.data.icon.prefix + " fa-" + stagedLink.data.icon.name));
+      if (stagedLink.link.icon.name != null && stagedLink.link.icon.prefix != null && stagedLink.link.icon.label != null) {
+        form.querySelector(".link-form-text-icon").appendChild(helper.node("span|class:link-form-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name));
       };
-      form.querySelector(".link-form-input-letter").value = stagedLink.data.letter;
-      form.querySelector(".link-form-input-icon").value = stagedLink.data.icon.label;
-      form.querySelector(".link-form-input-name").value = stagedLink.data.name;
-      form.querySelector(".link-form-input-url").value = stagedLink.data.url;
-      if (stagedLink.data.accent.override) {
+      form.querySelector(".link-form-input-letter").value = stagedLink.link.letter;
+      form.querySelector(".link-form-input-icon").value = stagedLink.link.icon.label;
+      form.querySelector(".link-form-input-name").value = stagedLink.link.name;
+      form.querySelector(".link-form-input-url").value = stagedLink.link.url;
+      if (stagedLink.link.accent.override) {
         form.querySelector(".link-form-input-accent-global").checked = false;
         form.querySelector(".link-form-input-accent-custom").checked = true;
         form.querySelector(".link-form-input-accent-picker").removeAttribute("disabled");
@@ -572,14 +572,14 @@ var link = (function() {
         form.querySelector(".link-form-input-accent-hex").setAttribute("disabled", "");
         helper.addClass(form.querySelector(".link-form-input-accent-helper"), "disabled");
       };
-      if (stagedLink.data.accent.color.r != null && stagedLink.data.accent.color.g != null && stagedLink.data.accent.color.b != null) {
-        form.querySelector(".link-form-input-accent-picker").value = helper.rgbToHex(stagedLink.data.accent.color);
-        form.querySelector(".link-form-input-accent-hex").value = helper.rgbToHex(stagedLink.data.accent.color);
+      if (stagedLink.link.accent.color.r != null && stagedLink.link.accent.color.g != null && stagedLink.link.accent.color.b != null) {
+        form.querySelector(".link-form-input-accent-picker").value = helper.rgbToHex(stagedLink.link.accent.color);
+        form.querySelector(".link-form-input-accent-hex").value = helper.rgbToHex(stagedLink.link.accent.color);
       };
       modal.open({
-        heading: "Edit " + stagedLink.data.name,
+        heading: "Edit " + stagedLink.link.name,
         successAction: function() {
-          bookmarks.edit(JSON.parse(JSON.stringify(stagedLink.data)));
+          bookmarks.edit(JSON.parse(JSON.stringify(stagedLink.link)));
           data.save();
           render.clear();
           render.item.all();
@@ -673,7 +673,7 @@ var link = (function() {
     var groupNew = helper.node("option:New group|value:New Group");
     var groupNewInputWrap = helper.node("div|class:input-wrap");
     var groupNewLabel = helper.node("label:New group name|class:disabled,for:link-form-input-new-group");
-    var groupNewInput = helper.node("input|type:text,class:link-form-input-new-group mb-0,id:link-form-input-new-group,placeholder:Alpha group,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false,disabled");
+    var groupNewInput = helper.node("input|type:text,class:link-form-input-new-group mb-0,id:link-form-input-new-group,placeholder:Example group,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false,disabled");
 
     // letter
     var displayLetterRadioWrap = helper.node("div|class:input-wrap");
@@ -785,64 +785,64 @@ var link = (function() {
     form.appendChild(fieldset);
 
     groupSelect.addEventListener("change", function(event) {
-      stagedLink.data.group.index = this.selectedIndex;
+      stagedLink.position.group.index = this.selectedIndex;
       if (this.selectedIndex > (bookmarks.get().length - 1)) {
-        stagedLink.data.group.new.active = true;
+        stagedLink.position.group.new.active = true;
         helper.removeClass(groupNewLabel, "disabled");
         groupNewInput.removeAttribute("disabled");
       } else {
-        stagedLink.data.group.new.active = false;
+        stagedLink.position.group.new.active = false;
         helper.addClass(groupNewLabel, "disabled");
         groupNewInput.setAttribute("disabled", "");
       };
     }, false);
     groupNewInput.addEventListener("input", function(event) {
-      stagedLink.data.group.new.name = this.value;
+      stagedLink.position.group.new.name = this.value;
     }, false);
     displayLetterRadio.addEventListener("change", function(event) {
-      stagedLink.data.display = this.value;
+      stagedLink.link.display = this.value;
     }, false);
     displayIconRadio.addEventListener("change", function(event) {
-      stagedLink.data.display = this.value;
+      stagedLink.link.display = this.value;
     }, false);
     displayLetterInput.addEventListener("input", function(event) {
-      stagedLink.data.letter = this.value;
+      stagedLink.link.letter = this.value;
     }, false);
     nameInput.addEventListener("input", function(event) {
-      stagedLink.data.name = this.value;
+      stagedLink.link.name = this.value;
     }, false);
     urlInput.addEventListener("input", function(event) {
-      stagedLink.data.url = this.value;
+      stagedLink.link.url = this.value;
     }, false);
     accentGlobalRadio.addEventListener("change", function() {
-      stagedLink.data.accent.override = false;
+      stagedLink.link.accent.override = false;
       accentColorPicker.setAttribute("disabled", "");
       accentColorHex.setAttribute("disabled", "");
       helper.addClass(accentColorInputHelper, "disabled");
     }, false);
     accentCustomRadio.addEventListener("change", function() {
-      stagedLink.data.accent.override = true;
-      stagedLink.data.accent.color = helper.hexToRgb(accentColorPicker.value);
+      stagedLink.link.accent.override = true;
+      stagedLink.link.accent.color = helper.hexToRgb(accentColorPicker.value);
       accentColorPicker.removeAttribute("disabled");
       accentColorHex.removeAttribute("disabled");
       helper.removeClass(accentColorInputHelper, "disabled");
     }, false);
     accentColorPicker.addEventListener("change", function() {
       if (helper.isHexNumber(this.value)) {
-        stagedLink.data.accent.color = helper.hexToRgb(this.value);
+        stagedLink.link.accent.color = helper.hexToRgb(this.value);
         accentColorHex.value = this.value;
       };
     }, false);
     accentColorHex.addEventListener("input", function() {
       if (helper.isHexNumber(this.value)) {
-        stagedLink.data.accent.color = helper.hexToRgb(this.value);
+        stagedLink.link.accent.color = helper.hexToRgb(this.value);
         accentColorPicker.value = this.value;
       };
     }, false);
     displayIconFormGroupClear.addEventListener("click", function(event) {
-      stagedLink.data.icon.name = null;
-      stagedLink.data.icon.prefix = null;
-      stagedLink.data.icon.label = null;
+      stagedLink.link.icon.name = null;
+      stagedLink.link.icon.prefix = null;
+      stagedLink.link.icon.label = null;
       var existingIcon = helper.e(".link-form-icon");
       if (existingIcon) {
         existingIcon.remove();
@@ -874,19 +874,19 @@ var link = (function() {
   };
 
   render.autoSuggestIconAction = function(autoSuggestData) {
-    stagedLink.data.icon.label = autoSuggestData.label;
-    stagedLink.data.icon.name = autoSuggestData.name;
+    stagedLink.link.icon.label = autoSuggestData.label;
+    stagedLink.link.icon.name = autoSuggestData.name;
     if (autoSuggestData.styles.includes("solid")) {
-      stagedLink.data.icon.prefix = "fas";
+      stagedLink.link.icon.prefix = "fas";
     } else if (autoSuggestData.styles.includes("brands")) {
-      stagedLink.data.icon.prefix = "fab";
+      stagedLink.link.icon.prefix = "fab";
     };
     var existingIcon = helper.e(".link-form-icon");
     if (existingIcon) {
       existingIcon.remove();
     };
     helper.e(".link-form-input-icon").value = autoSuggestData.label;
-    helper.e(".link-form-text-icon").appendChild(helper.node("span|class:link-form-icon " + stagedLink.data.icon.prefix + " fa-" + stagedLink.data.icon.name));
+    helper.e(".link-form-text-icon").appendChild(helper.node("span|class:link-form-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name));
     helper.e(".link-form-text-icon").focus();
   };
 
@@ -897,8 +897,8 @@ var link = (function() {
       modal.open({
         heading: "Add a new bookmark",
         successAction: function() {
-          stagedLink.data.timeStamp = new Date().getTime();
-          bookmarks.mod.add.link(JSON.parse(JSON.stringify(stagedLink.data)));
+          stagedLink.link.timeStamp = new Date().getTime();
+          bookmarks.mod.add.link(JSON.parse(JSON.stringify(stagedLink)));
           data.save();
           mod.add.close();
           render.clear();

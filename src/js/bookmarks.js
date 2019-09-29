@@ -115,15 +115,16 @@ var bookmarks = (function() {
 
   mod.add = {
     link: function(data) {
-      if (data.group.new.active) {
+      console.log(data);
+      if (data.position.group.new.active) {
         mod.add.group(data);
       };
-      mod.all[data.group.index].items.push(data);
+      mod.all[data.position.group.index].items.push(data);
     },
     group: function(data) {
-      var count = data.group.index + 1;
+      var count = data.position.group.index + 1;
       mod.all.push({
-        name: data.group.new.name || "Group " + count,
+        name: data.position.group.new.name || "Group " + count,
         items: []
       });
     }
