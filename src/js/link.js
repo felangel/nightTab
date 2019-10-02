@@ -248,22 +248,32 @@ var link = (function() {
         bookmarks: function(data) {
           console.log("group", data);
           data.forEach(function(arrayItem, index) {
+            var groupIndex = index;
             console.log(arrayItem);
+            // make group
             var linkArea = helper.node("div|class:link-area");
-            if (arrayItem.name != null && arrayItem.name != "") {
-              var linkAreaName = helper.node("h2:" + arrayItem.name);
-              linkArea.appendChild(linkAreaName);
-            };
+            // if group has items
             if (arrayItem.items.length > 0) {
+              // if group has name
+              if (arrayItem.name != null && arrayItem.name != "") {
+                // add group name
+                var linkAreaName = helper.node("h2:" + arrayItem.name);
+                linkArea.appendChild(linkAreaName);
+              };
+              // link list
               var linkAreaList = helper.node("div|class:link-area-list");
-              // assign an index to read later
-              linkAreaList.index = index;
+              // make link item
               arrayItem.items.forEach(function(arrayItem, index) {
-                linkAreaList.appendChild(render.item.link(arrayItem, index));
+                var linkItem = render.item.link(arrayItem, index);
+                // record item position to read later
+                linkItem.position = {
+                  group: groupIndex,
+                  item: index
+                };
+                linkAreaList.appendChild(linkItem);
               });
+              // append link item
               linkArea.appendChild(linkAreaList);
-            };
-            if (arrayItem.items.length > 0) {
               linkSection.appendChild(linkArea);
             };
           });
@@ -344,7 +354,6 @@ var link = (function() {
         };
       };
       var linkItem = helper.makeNode(linkItemOptions);
-      linkItem.index = index;
       var linkPanelFrontOptions = {
         tag: "a",
         attr: [{
@@ -537,7 +546,7 @@ var link = (function() {
       if (stagedLink.link.display == "letter" || stagedLink.link.display == null) {
         form.querySelector(".link-form-input-letter").removeAttribute("disabled");
         form.querySelector(".link-form-input-icon").setAttribute("disabled", "");
-        form.querySelector(".form-group-text").setAttribute("disabled", "");
+        helper.addClass(form.querySelector(".form-group-text"), "disabled");
         form.querySelector(".link-form-input-icon").setAttribute("disabled", "");
         helper.addClass(form.querySelector(".link-form-input-icon-helper"), "disabled");
         form.querySelector(".link-form-icon-clear").setAttribute("disabled", "");
@@ -545,7 +554,7 @@ var link = (function() {
       } else if (stagedLink.link.display == "icon") {
         form.querySelector(".link-form-input-letter").setAttribute("disabled", "");
         form.querySelector(".link-form-input-icon").removeAttribute("disabled");
-        form.querySelector(".form-group-text").removeAttribute("disabled");
+        helper.removeClass(form.querySelector(".form-group-text"), "disabled");
         form.querySelector(".link-form-input-icon").removeAttribute("disabled");
         helper.removeClass(form.querySelector(".link-form-input-icon-helper"), "disabled");
         form.querySelector(".link-form-icon-clear").removeAttribute("disabled");
@@ -691,7 +700,7 @@ var link = (function() {
     var displayIconInputWrap = helper.node("div|class:input-wrap");
     var displayIconFormGroup = helper.node("div|class:form-group mb-0 auto-suggest-wrapper");
     var displayIconInput = helper.node("input|type:text,class:form-group-item-grow link-form-input-icon auto-suggest-input,id:link-form-input-icon,placeholder:Search for Brands or Icons,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false,disabled");
-    var displayIconFormGroupText = helper.node("div|class:form-group-text link-form-text-icon,tabindex:-1,disabled");
+    var displayIconFormGroupText = helper.node("div|class:form-group-text link-form-text-icon disabled,tabindex:-1");
     var displayIconFormGroupClear = helper.node("button|class:link-form-icon-clear button mb-0,type:button,tabindex:1,disabled");
     var displayIconFormGroupClearIcon = helper.node("span|class:icon-close");
     var displayIconHelper = helper.node("p:Refer to the \"Free\" and \"Brand\" icons from FontAwesome for full set of icons supported.|class:link-form-input-icon-helper form-helper small muted disabled");
@@ -852,7 +861,7 @@ var link = (function() {
     displayLetterRadio.addEventListener("change", function(event) {
       displayLetterInput.removeAttribute("disabled");
       displayIconInput.setAttribute("disabled", "");
-      displayIconFormGroupText.setAttribute("disabled", "");
+      helper.addClass(displayIconFormGroupText, "disabled");
       helper.addClass(displayIconHelper, "disabled");
       displayIconFormGroupClear.setAttribute("disabled", "");
       displayIconFormGroupText.tabIndex = -1;
@@ -860,7 +869,7 @@ var link = (function() {
     displayIconRadio.addEventListener("change", function(event) {
       displayLetterInput.setAttribute("disabled", "");
       displayIconInput.removeAttribute("disabled");
-      displayIconFormGroupText.removeAttribute("disabled");
+      helper.removeClass(displayIconFormGroupText, "disabled");
       helper.removeClass(displayIconHelper, "disabled");
       displayIconFormGroupClear.removeAttribute("disabled");
       displayIconFormGroupText.tabIndex = 1;

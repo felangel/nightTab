@@ -115,11 +115,10 @@ var bookmarks = (function() {
 
   mod.add = {
     link: function(data) {
-      console.log(data);
       if (data.position.group.new.active) {
         mod.add.group(data);
       };
-      mod.all[data.position.group.index].items.push(data);
+      mod.all[data.position.group.index].items.push(data.link);
     },
     group: function(data) {
       var count = data.position.group.index + 1;

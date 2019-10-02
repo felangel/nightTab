@@ -1155,15 +1155,15 @@ input[type="range"]:disabled::-moz-range-progress {
   outline: none;
 }
 
-.form-group-text:disabled {
+.form-group-text.disabled {
   background-color: rgb(var(--theme-gray-02));
   color: rgb(var(--form-input-placeholder-disabled));
   box-shadow: none;
   cursor: default;
 }
 
-.form-group-text:disabled:hover,
-.form-group-text:disabled:focus {
+.form-group-text.disabled:hover,
+.form-group-text.disabled:focus {
   background-color: rgb(var(--theme-gray-02));
   border-color: transparent;
 }
