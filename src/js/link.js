@@ -158,21 +158,30 @@ var link = (function() {
       acceptFrom: '.link-area-list',
       placeholder: helper.node("div|class:link-item-placeholder")
     });
+    helper.eA(".link").forEach(function(arrayItem, index) {
+      sortable(arrayItem)[0].addEventListener("sortupdate", function(event) {
+        bookmarks.mod.move.group(event.detail.origin.index, event.detail.destination.index);
+        data.save();
+        console.log(event);
+        console.log("group index origin", event.detail.origin.index);
+        console.log("group index target", event.detail.destination.index);
+      });
+    });
     helper.eA(".link-area-list").forEach(function(arrayItem, index) {
       sortable(arrayItem)[0].addEventListener("sortupdate", function(event) {
         console.log(event);
-        console.log("origin list index", event.detail.origin.container.index, event.detail.origin.container);
-        console.log("target list index", event.detail.destination.container.index, event.detail.destination.container);
-        console.log({
-          origin: {
-            listIndex: event.detail.origin.container.index,
-            itemIndex: event.detail.origin.index
-          },
-          destination: {
-            listIndex: event.detail.destination.container.index,
-            itemIndex: event.detail.destination.index
-          }
-        });
+        // console.log("origin list index", event.detail.origin.container.index, event.detail.origin.container);
+        // console.log("target list index", event.detail.destination.container.index, event.detail.destination.container);
+        // console.log({
+        //   origin: {
+        //     listIndex: event.detail.origin.container.index,
+        //     itemIndex: event.detail.origin.index
+        //   },
+        //   destination: {
+        //     listIndex: event.detail.destination.container.index,
+        //     itemIndex: event.detail.destination.index
+        //   }
+        // });
         // bookmarks.move({
         //   origin: {
         //     listIndex: event.detail.origin.container.index,
@@ -184,7 +193,7 @@ var link = (function() {
         //   }
         // });
         // bookmarks.move(event.detail.origin.index, event.detail.destination.index);
-        data.save();
+        // data.save();
       });
     });
   };
@@ -256,6 +265,7 @@ var link = (function() {
           data.forEach(function(arrayItem, index) {
             stagedLink.position.group.index = index;
             var linkArea = helper.node("div|class:link-area");
+            linkArea.position = JSON.parse(JSON.stringify(stagedLink.position));
             if (arrayItem.items.length > 0) {
               if (arrayItem.name != null && arrayItem.name != "") {
                 var linkAreaName = helper.node("h2:" + arrayItem.name);
@@ -265,7 +275,9 @@ var link = (function() {
               arrayItem.items.forEach(function(arrayItem, index) {
                 stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
                 stagedLink.position.item.index = index;
-                linkAreaList.appendChild(render.item.link());
+                var linkItem = render.item.link();
+                linkItem.position = JSON.parse(JSON.stringify(stagedLink.position));
+                linkAreaList.appendChild(linkItem);
               });
               // append link item
               linkArea.appendChild(linkAreaList);
@@ -678,7 +690,7 @@ var link = (function() {
     var groupExistingLable = helper.node("label:Existing group|for:link-form-input-group-existing");
     var groupExistingFormIndent = helper.node("div|class:form-indent");
     var groupExistingInputWrap = helper.node("div|class:input-wrap");
-    var groupExistingSelect = helper.node("select|id:link-form-select-group,class:link-form-select-group mb-0");
+    var groupExistingSelect = helper.node("select|id:link-form-select-group,class:link-form-select-group mb-0,tabindex:1");
 
     // group new
     var groupNewRadioWrap = helper.node("div|class:input-wrap");

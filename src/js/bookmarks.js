@@ -162,8 +162,13 @@ var bookmarks = (function() {
     mod.all = action[by](mod.all);
   };
 
-  mod.move = function(origin, destination) {
-    mod.all = helper.moveArrayItem(mod.all, origin, destination);
+  mod.move = {
+    link: function(origin, destination) {
+      mod.all = helper.moveArrayItem(mod.all, origin, destination);
+    },
+    group: function(origin, destination) {
+      mod.all = helper.moveArrayItem(mod.all, origin, destination);
+    }
   };
 
   var get = function(data) {
@@ -176,10 +181,6 @@ var bookmarks = (function() {
 
   var sort = function(by) {
     mod.sort(by);
-  };
-
-  var move = function(origin, destination) {
-    mod.move(origin, destination);
   };
 
   var remove = function(data) {
@@ -199,7 +200,6 @@ var bookmarks = (function() {
     get: get,
     edit: edit,
     sort: sort,
-    move: move,
     remove: remove
   };
 
