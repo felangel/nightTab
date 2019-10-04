@@ -163,11 +163,11 @@ var bookmarks = (function() {
   };
 
   mod.move = {
-    link: function(origin, destination) {
-      mod.all = helper.moveArrayItem(mod.all, origin, destination);
+    link: function(data) {
+      mod.all = helper.moveArrayItem(mod.all[data.group], data.origin, data.destination);
     },
-    group: function(origin, destination) {
-      mod.all = helper.moveArrayItem(mod.all, origin, destination);
+    group: function(data) {
+      mod.all = helper.moveArrayItem(mod.all, data.origin, data.destination);
     }
   };
 

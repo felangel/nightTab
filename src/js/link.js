@@ -149,7 +149,6 @@ var link = (function() {
     sortable(".link", {
       items: ".link-area",
       handle: ".link-area h2",
-      // acceptFrom: '.link-area-list',
       placeholder: helper.node("div|class:link-item-placeholder")
     });
     sortable(".link-area-list", {
@@ -160,16 +159,34 @@ var link = (function() {
     });
     helper.eA(".link").forEach(function(arrayItem, index) {
       sortable(arrayItem)[0].addEventListener("sortupdate", function(event) {
-        bookmarks.mod.move.group(event.detail.origin.index, event.detail.destination.index);
+        bookmarks.mod.move.group({
+          origin: event.detail.origin.index,
+          destination: event.detail.destination.index
+        });
         data.save();
-        console.log(event);
-        console.log("group index origin", event.detail.origin.index);
-        console.log("group index target", event.detail.destination.index);
       });
     });
     helper.eA(".link-area-list").forEach(function(arrayItem, index) {
       sortable(arrayItem)[0].addEventListener("sortupdate", function(event) {
         console.log(event);
+        // console.log({
+        //   origin: {
+        //     group: event.detail.item.position.group.index,
+        //     item: event.detail.origin.index
+        //   },
+        //   destination: {
+        //     group: event.detail.item.position.group.index,
+        //     item: event.detail.destination.index
+        //   }
+        // });
+        // bookmarks.mod.move.group({
+        //   group: event.detail.item.position.group.index,
+        //   origin: event.detail.origin.index,
+        //   destination: event.detail.destination.index
+        // });
+        // data.save();
+        // console.log(event);
+        // console.log(event.detail.item.position.group.index);
         // console.log("origin list index", event.detail.origin.container.index, event.detail.origin.container);
         // console.log("target list index", event.detail.destination.container.index, event.detail.destination.container);
         // console.log({
@@ -764,7 +781,7 @@ var link = (function() {
     groupExistingFormIndent.appendChild(groupExistingInputWrap);
     fieldset.appendChild(groupExistingRadioWrap);
     fieldset.appendChild(groupExistingFormIndent);
-    
+
     groupNewRadioWrap.appendChild(groupNewRadio);
     groupNewRadioWrap.appendChild(groupNewLable);
     groupNewInputWrap.appendChild(groupNewInput);
@@ -1007,10 +1024,10 @@ var link = (function() {
     edit: edit,
     items: items,
     tabindex: tabindex,
-    
-    
+
+
     stagedLink: stagedLink
-    
+
   };
 
 })();
