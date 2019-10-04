@@ -26,6 +26,11 @@
   padding-right: calc(var(--layout-space) * var(--layout-padding));
 }
 
+.link-area, .link-area-list {
+  padding: 2em;
+  border: 1px solid red;
+}
+
 .link-area-list {
   font-size: calc(var(--link-item-size) * 1);
   position: relative;
@@ -88,11 +93,13 @@
   width: 100%;
   height: 100%;
   position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  /* top: 50%; */
+  /* left: 50%; */
+  /* transform: translate(-50%, -50%); */
   box-shadow: inset 0 0 0 var(--layout-line-width) rgb(var(--theme-accent)), inset 0 0 0 calc(var(--layout-line-width) * 4) rgba(var(--theme-accent), 0.1), inset 0 0 0 calc(var(--layout-line-width) * 8) rgba(var(--theme-accent), 0.1);
   pointer-events: none;
+  min-width: 5em;
+  min-height: 5em;
 }
 
 .link-panel-front {

@@ -121,28 +121,29 @@ var bookmarks = (function() {
       mod.all[data.position.group.index].items.push(data.link);
     },
     group: function(data) {
-      var count = data.position.group.index + 1;
+      var name = data.position.group.new.name;
+      if (name != null && typeof name == "string") {
+        name = name.trim();
+      };
+      if (name == "" || name == null || name == undefined) {
+        var count = data.position.group.index + 1;
+        name = "Group " + count;
+      };
       mod.all.push({
-        name: data.position.group.new.name || "Group " + count,
+        name: name,
         items: []
       });
     }
   };
 
   mod.edit = function(data) {
-    console.log(data);
-    for (var i = 0; i < mod.all.length; i++) {
-      if (mod.all[i].timeStamp === data.timeStamp) {
-        mod.all[i] = data;
-      };
-    };
+    mod.all[data.position.group.index].items[data.position.item.index] = data.link;
   };
 
   mod.remove = function(data) {
-    for (var i = 0; i < mod.all.length; i++) {
-      if (mod.all[i].timeStamp === data.timeStamp) {
-        mod.all.splice(mod.all.indexOf(mod.all[i]), 1);
-      };
+    mod.all[data.position.group.index].items.splice(data.position.item.index, 1);
+    if (mod.all[data.position.group.index].items.length == 0) {
+      mod.all.splice(data.position.group.index, 1);
     };
   };
 

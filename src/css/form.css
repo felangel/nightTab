@@ -57,6 +57,9 @@ select:disabled:hover,
 select:disabled:focus,
 select:disabled:active {
   background-color: transparent;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgb(var(--form-input-text-disabled)) 50%),
+    linear-gradient(135deg, rgb(var(--form-input-text-disabled)) 50%, transparent 50%);
   color: rgb(var(--form-input-text-disabled));
   border-color: rgb(var(--form-input-text-disabled));
   cursor: default;

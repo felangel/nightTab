@@ -1,5 +1,68 @@
 var link = (function() {
 
+  var _previousFocus = null;
+
+  var stagedLink = {
+    position: {
+      group: {
+        index: null,
+        new: {
+          active: null,
+          name: null
+        }
+      },
+      item: {
+        index: null
+      }
+    },
+    link: {
+      display: null,
+      letter: null,
+      icon: {
+        name: null,
+        prefix: null,
+        label: null
+      },
+      name: null,
+      url: null,
+      timeStamp: null,
+      accent: {
+        override: null,
+        color: {
+          r: null,
+          g: null,
+          b: null
+        }
+      }
+    }
+  };
+
+  stagedLink.init = function() {
+    stagedLink.position.group.index = 0;
+    stagedLink.position.group.new.active = false;
+    stagedLink.link.display = "letter";
+    stagedLink.link.accent.override = false;
+  };
+
+  stagedLink.reset = function() {
+    stagedLink.position.group.index = null;
+    stagedLink.position.group.new.active = null;
+    stagedLink.position.group.new.name = null;
+    stagedLink.position.item.index = null;
+    stagedLink.link.display = null;
+    stagedLink.link.letter = null;
+    stagedLink.link.icon.name = null;
+    stagedLink.link.icon.prefix = null;
+    stagedLink.link.icon.label = null;
+    stagedLink.link.name = null;
+    stagedLink.link.url = null;
+    stagedLink.link.timeStamp = null;
+    stagedLink.link.accent.override = null;
+    stagedLink.link.accent.color.r = null;
+    stagedLink.link.accent.color.g = null;
+    stagedLink.link.accent.color.b = null;
+  };
+
   var mod = {};
 
   mod.accent = {
@@ -83,6 +146,12 @@ var link = (function() {
   var bind = {};
 
   bind.sort = function() {
+    sortable(".link", {
+      items: ".link-area",
+      handle: ".link-area h2",
+      // acceptFrom: '.link-area-list',
+      placeholder: helper.node("div|class:link-item-placeholder")
+    });
     sortable(".link-area-list", {
       items: ".link-item",
       handle: ".link-control-item-handle",
@@ -120,77 +189,15 @@ var link = (function() {
     });
   };
 
-  var _previousFocus = null;
-
-  var stagedLink = {
-    position: {
-      group: {
-        index: null,
-        new: {
-          active: null,
-          name: null
-        }
-      },
-      item: {
-        index: null
-      }
-    },
-    link: {
-      display: null,
-      letter: null,
-      icon: {
-        name: null,
-        prefix: null,
-        label: null
-      },
-      name: null,
-      url: null,
-      timeStamp: null,
-      accent: {
-        override: null,
-        color: {
-          r: null,
-          g: null,
-          b: null
-        }
-      }
-    }
-  };
-
-  stagedLink.init = function() {
-    stagedLink.position.group.index = 0;
-    stagedLink.position.group.new.active = false;
-    stagedLink.link.display = "letter";
-    stagedLink.link.accent.override = false;
-  };
-
-  stagedLink.reset = function() {
-    stagedLink.position.group.index = null;
-    stagedLink.position.group.new.active = null;
-    stagedLink.position.group.new.name = null;
-    stagedLink.link.display = null;
-    stagedLink.link.letter = null;
-    stagedLink.link.icon.name = null;
-    stagedLink.link.icon.prefix = null;
-    stagedLink.link.icon.label = null;
-    stagedLink.link.name = null;
-    stagedLink.link.url = null;
-    stagedLink.link.timeStamp = null;
-    stagedLink.link.accent.override = null;
-    stagedLink.link.accent.color.r = null;
-    stagedLink.link.accent.color.g = null;
-    stagedLink.link.accent.color.b = null;
-  };
-
   var render = {};
 
-  render.remove = function(bookmarkData) {
+  render.remove = function(copyStagedLink) {
     modal.open({
-      heading: "Remove " + bookmarkData.name + " bookmark",
+      heading: "Remove " + copyStagedLink.link.name + " bookmark",
       content: "Are you sure you want to remove this bookmark? This can not be undone.",
       successAction: function() {
         _previousFocus = _previousFocus - 1;
-        bookmarks.remove(bookmarkData);
+        bookmarks.remove(copyStagedLink);
         mod.edit.check();
         header.render.button.edit();
         data.save();
@@ -198,7 +205,7 @@ var link = (function() {
         render.item.all();
         render.item.tabindex();
         render.previousFocus();
-        sortable(".link-area");
+        sortable(".link-area-list");
         control.render.dependents();
         control.render.class();
         shade.close();
@@ -246,36 +253,25 @@ var link = (function() {
       };
       var action = {
         bookmarks: function(data) {
-          console.log("group", data);
           data.forEach(function(arrayItem, index) {
-            var groupIndex = index;
-            console.log(arrayItem);
-            // make group
+            stagedLink.position.group.index = index;
             var linkArea = helper.node("div|class:link-area");
-            // if group has items
             if (arrayItem.items.length > 0) {
-              // if group has name
               if (arrayItem.name != null && arrayItem.name != "") {
-                // add group name
                 var linkAreaName = helper.node("h2:" + arrayItem.name);
                 linkArea.appendChild(linkAreaName);
               };
-              // link list
               var linkAreaList = helper.node("div|class:link-area-list");
-              // make link item
               arrayItem.items.forEach(function(arrayItem, index) {
-                var linkItem = render.item.link(arrayItem, index);
-                // record item position to read later
-                linkItem.position = {
-                  group: groupIndex,
-                  item: index
-                };
-                linkAreaList.appendChild(linkItem);
+                stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
+                stagedLink.position.item.index = index;
+                linkAreaList.appendChild(render.item.link());
               });
               // append link item
               linkArea.appendChild(linkAreaList);
               linkSection.appendChild(linkArea);
             };
+            stagedLink.reset();
           });
         },
         empty: {
@@ -327,7 +323,7 @@ var link = (function() {
       var html = helper.e("html");
       html.style.setProperty("--link-item-size", state.get().link.item.size + "em");
     },
-    link: function(data, index) {
+    link: function() {
       var linkItemOptions = {
         tag: "div",
         attr: [{
@@ -335,15 +331,14 @@ var link = (function() {
           value: "link-item"
         }]
       };
-      console.log("\t link", data);
-      if (data.accent.override) {
+      if (stagedLink.link.accent.override) {
         linkItemOptions.attr.push({
           key: "style",
-          value: "--theme-accent: " + data.accent.color.r + ", " + data.accent.color.g + ", " + data.accent.color.b
+          value: "--theme-accent: " + stagedLink.link.accent.color.r + ", " + stagedLink.link.accent.color.g + ", " + stagedLink.link.accent.color.b
         });
-        if (invert(data.accent.color, true) == "#000000") {
+        if (invert(stagedLink.link.accent.color, true) == "#000000") {
           linkItemOptions.attr[0].value = linkItemOptions.attr[0].value + " link-url-text-dark";
-        } else if (invert(data.accent.color, true) == "#ffffff") {
+        } else if (invert(stagedLink.link.accent.color, true) == "#ffffff") {
           linkItemOptions.attr[0].value = linkItemOptions.attr[0].value + " link-url-text-light";
         };
       } else {
@@ -361,7 +356,7 @@ var link = (function() {
           value: "link-panel-front"
         }, {
           key: "href",
-          value: data.url
+          value: stagedLink.link.url
         }, {
           key: "tabindex",
           value: 1
@@ -390,27 +385,27 @@ var link = (function() {
       });
       var linkDisplayLetter = null;
       var linkDisplayIcon = null;
-      if (data.display == "letter") {
+      if (stagedLink.link.display == "letter") {
         linkDisplayLetter = helper.makeNode({
           tag: "p",
-          text: data.letter,
+          text: stagedLink.link.letter,
           attr: [{
             key: "class",
             value: "link-display-letter"
           }]
         });
-      } else if (data.display == "icon" && data.icon.prefix != null && data.icon.name != null) {
+      } else if (stagedLink.link.display == "icon" && stagedLink.link.icon.prefix != null && stagedLink.link.icon.name != null) {
         linkDisplayIcon = helper.makeNode({
           tag: "div",
           attr: [{
             key: "class",
-            value: "link-display-icon " + data.icon.prefix + " fa-" + data.icon.name
+            value: "link-display-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name
           }]
         });
       };
       var linkName = helper.makeNode({
         tag: "p",
-        text: data.name,
+        text: stagedLink.link.name,
         attr: [{
           key: "class",
           value: "link-name"
@@ -424,8 +419,8 @@ var link = (function() {
         }]
       });
       var url = "";
-      if (data.url != null) {
-        url = data.url.replace(/^https?\:\/\//i, "").replace(/\/$/, "");
+      if (stagedLink.link.url != null) {
+        url = stagedLink.link.url.replace(/^https?\:\/\//i, "").replace(/\/$/, "");
       };
       var linkUrlText = helper.makeNode({
         tag: "p",
@@ -505,9 +500,9 @@ var link = (function() {
           value: "button-icon icon-close"
         }]
       });
-      if (data.display == "letter") {
+      if (stagedLink.link.display == "letter") {
         linkDisplay.appendChild(linkDisplayLetter);
-      } else if (data.display == "icon" && data.icon.prefix != null && data.icon.name != null) {
+      } else if (stagedLink.link.display == "icon" && stagedLink.link.icon.prefix != null && stagedLink.link.icon.name != null) {
         linkDisplay.appendChild(linkDisplayIcon);
       };
       if (state.get().link.item.order == "displayname") {
@@ -530,19 +525,22 @@ var link = (function() {
       linkItem.appendChild(linkPanelBack);
 
       linkEdit.addEventListener("click", function() {
-        _previousFocus = index;
-        render.item.edit(data);
+        _previousFocus = stagedLink.position;
+        render.item.edit(stagedLink);
       }, false);
+
       linkRemove.addEventListener("click", function() {
-        _previousFocus = index;
-        render.remove(data);
+        _previousFocus = stagedLink.position;
+        render.remove(stagedLink);
       }, false);
 
       return linkItem;
     },
-    edit: function(data) {
-      stagedLink.link = JSON.parse(JSON.stringify(data));
+    edit: function(stagedLink) {
+      console.log(stagedLink);
+      // stagedLink = JSON.parse(JSON.stringify(stagedLink));
       var form = render.form();
+      form.querySelector(".link-form-select-group").selectedIndex = stagedLink.position.group.index;
       if (stagedLink.link.display == "letter" || stagedLink.link.display == null) {
         form.querySelector(".link-form-input-letter").removeAttribute("disabled");
         form.querySelector(".link-form-input-icon").setAttribute("disabled", "");
@@ -588,13 +586,13 @@ var link = (function() {
       modal.open({
         heading: "Edit " + stagedLink.link.name,
         successAction: function() {
-          bookmarks.edit(JSON.parse(JSON.stringify(stagedLink.link)));
+          bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
           data.save();
           render.clear();
           render.item.all();
           render.item.tabindex();
           render.previousFocus();
-          sortable(".link-area");
+          sortable(".link-area-list");
           stagedLink.reset();
           shade.close();
           pagelock.unlock();
@@ -674,14 +672,20 @@ var link = (function() {
     var form = helper.node("form|class:link-form");
     var fieldset = helper.node("fieldset");
 
-    // group
-    var groupSelectWrap = helper.node("div|class:input-wrap");
-    var groupLabel = helper.node("label:Group|for:xxx");
-    var groupSelect = helper.node("select|id:xxx,class:yyy mb-0");
+    // group existing
+    var groupExistingRadioWrap = helper.node("div|class:input-wrap");
+    var groupExistingRadio = helper.node("input|class:link-form-input-group-existing,id:link-form-input-group-existing,type:radio,name:link-form-input-group,tabindex:1,checked,value:existing");
+    var groupExistingLable = helper.node("label:Existing group|for:link-form-input-group-existing");
+    var groupExistingFormIndent = helper.node("div|class:form-indent");
+    var groupExistingInputWrap = helper.node("div|class:input-wrap");
+    var groupExistingSelect = helper.node("select|id:link-form-select-group,class:link-form-select-group mb-0");
+
+    // group new
+    var groupNewRadioWrap = helper.node("div|class:input-wrap");
+    var groupNewRadio = helper.node("input|class:link-form-input-group-new,id:link-form-input-group-new,type:radio,name:link-form-input-group,tabindex:1,value:new");
+    var groupNewLable = helper.node("label:New group|for:link-form-input-group-new");
     var groupNewFormIndent = helper.node("div|class:form-indent");
-    var groupNew = helper.node("option:New group|value:New Group");
     var groupNewInputWrap = helper.node("div|class:input-wrap");
-    var groupNewLabel = helper.node("label:New group name|class:disabled,for:link-form-input-new-group");
     var groupNewInput = helper.node("input|type:text,class:link-form-input-new-group mb-0,id:link-form-input-new-group,placeholder:Example group,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false,disabled");
 
     // letter
@@ -738,17 +742,22 @@ var link = (function() {
     var accentColorHex = helper.node("input|id:link-form-input-accent-hex,class:form-group-item-half link-form-input-accent-hex mb-0,type:text,placeholder:Hex code,value:#000000,tabindex:1,maxlength:7,disabled");
     var accentColorInputHelper = helper.node("p:Use this colour to override the global Accent colour.|class:link-form-input-accent-helper form-helper small muted disabled");
 
-    groupSelectWrap.appendChild(groupLabel);
-    groupSelectWrap.appendChild(groupSelect);
+    groupExistingRadioWrap.appendChild(groupExistingRadio);
+    groupExistingRadioWrap.appendChild(groupExistingLable);
+    groupExistingInputWrap.appendChild(groupExistingSelect);
     bookmarks.get().forEach(function(arrayItem, index) {
       var option = helper.node("option:" + arrayItem.name + "|value:" + arrayItem.name);
-      groupSelect.appendChild(option);
+      groupExistingSelect.appendChild(option);
     });
-    groupSelect.appendChild(groupNew);
-    groupNewInputWrap.appendChild(groupNewLabel);
+    groupExistingFormIndent.appendChild(groupExistingInputWrap);
+    fieldset.appendChild(groupExistingRadioWrap);
+    fieldset.appendChild(groupExistingFormIndent);
+    
+    groupNewRadioWrap.appendChild(groupNewRadio);
+    groupNewRadioWrap.appendChild(groupNewLable);
     groupNewInputWrap.appendChild(groupNewInput);
-    groupNewFormIndent.appendChild(groupNewInputWrap)
-    fieldset.appendChild(groupSelectWrap);
+    groupNewFormIndent.appendChild(groupNewInputWrap);
+    fieldset.appendChild(groupNewRadioWrap);
     fieldset.appendChild(groupNewFormIndent);
     fieldset.appendChild(helper.node("hr"));
 
@@ -793,17 +802,20 @@ var link = (function() {
     fieldset.appendChild(accentColorFormIndent);
     form.appendChild(fieldset);
 
-    groupSelect.addEventListener("change", function(event) {
+    groupExistingRadio.addEventListener("change", function(event) {
+      stagedLink.position.group.new.active = false;
+      stagedLink.position.group.index = groupExistingSelect.selectedIndex;
+      groupExistingSelect.removeAttribute("disabled");
+      groupNewInput.setAttribute("disabled", "");
+    }, false);
+    groupExistingSelect.addEventListener("change", function(event) {
       stagedLink.position.group.index = this.selectedIndex;
-      if (this.selectedIndex > (bookmarks.get().length - 1)) {
-        stagedLink.position.group.new.active = true;
-        helper.removeClass(groupNewLabel, "disabled");
-        groupNewInput.removeAttribute("disabled");
-      } else {
-        stagedLink.position.group.new.active = false;
-        helper.addClass(groupNewLabel, "disabled");
-        groupNewInput.setAttribute("disabled", "");
-      };
+    }, false);
+    groupNewRadio.addEventListener("change", function(event) {
+      stagedLink.position.group.new.active = true;
+      stagedLink.position.group.index = bookmarks.get().length;
+      groupExistingSelect.setAttribute("disabled", "");
+      groupNewInput.removeAttribute("disabled");
     }, false);
     groupNewInput.addEventListener("input", function(event) {
       stagedLink.position.group.new.name = this.value;
@@ -913,7 +925,7 @@ var link = (function() {
           render.clear();
           render.item.all();
           render.item.tabindex();
-          sortable(".link-area");
+          sortable(".link-area-list");
           control.render.dependents();
           control.render.class();
           stagedLink.reset();
@@ -982,7 +994,11 @@ var link = (function() {
     add: add,
     edit: edit,
     items: items,
-    tabindex: tabindex
+    tabindex: tabindex,
+    
+    
+    stagedLink: stagedLink
+    
   };
 
 })();
