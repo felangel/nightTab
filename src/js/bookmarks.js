@@ -142,9 +142,9 @@ var bookmarks = (function() {
 
   mod.remove = function(data) {
     mod.all[data.position.group.index].items.splice(data.position.item.index, 1);
-    if (mod.all[data.position.group.index].items.length == 0) {
-      mod.all.splice(data.position.group.index, 1);
-    };
+    // if (mod.all[data.position.group.index].items.length == 0) {
+    //   mod.all.splice(data.position.group.index, 1);
+    // };
   };
 
   mod.sort = function(by) {
@@ -164,7 +164,9 @@ var bookmarks = (function() {
 
   mod.move = {
     link: function(data) {
-      mod.all = helper.moveArrayItem(mod.all[data.group], data.origin, data.destination);
+      var item = JSON.parse(JSON.stringify(mod.all[data.origin.group].items[data.origin.item]));
+      mod.all[data.origin.group].items.splice(data.origin.item, 1);
+      mod.all[data.destination.group].items.splice(data.destination.item, 0, item);
     },
     group: function(data) {
       mod.all = helper.moveArrayItem(mod.all, data.origin, data.destination);

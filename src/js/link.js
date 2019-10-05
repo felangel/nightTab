@@ -168,49 +168,17 @@ var link = (function() {
     });
     helper.eA(".link-area-list").forEach(function(arrayItem, index) {
       sortable(arrayItem)[0].addEventListener("sortupdate", function(event) {
-        console.log(event);
-        // console.log({
-        //   origin: {
-        //     group: event.detail.item.position.group.index,
-        //     item: event.detail.origin.index
-        //   },
-        //   destination: {
-        //     group: event.detail.item.position.group.index,
-        //     item: event.detail.destination.index
-        //   }
-        // });
-        // bookmarks.mod.move.group({
-        //   group: event.detail.item.position.group.index,
-        //   origin: event.detail.origin.index,
-        //   destination: event.detail.destination.index
-        // });
-        // data.save();
-        // console.log(event);
-        // console.log(event.detail.item.position.group.index);
-        // console.log("origin list index", event.detail.origin.container.index, event.detail.origin.container);
-        // console.log("target list index", event.detail.destination.container.index, event.detail.destination.container);
-        // console.log({
-        //   origin: {
-        //     listIndex: event.detail.origin.container.index,
-        //     itemIndex: event.detail.origin.index
-        //   },
-        //   destination: {
-        //     listIndex: event.detail.destination.container.index,
-        //     itemIndex: event.detail.destination.index
-        //   }
-        // });
-        // bookmarks.move({
-        //   origin: {
-        //     listIndex: event.detail.origin.container.index,
-        //     itemIndex: event.detail.origin.index
-        //   },
-        //   destination: {
-        //     listIndex: event.detail.destination.container.index,
-        //     itemIndex: event.detail.destination.index
-        //   }
-        // });
-        // bookmarks.move(event.detail.origin.index, event.detail.destination.index);
-        // data.save();
+        bookmarks.mod.move.link({
+          origin: {
+            group: helper.getClosest(event.detail.origin.container, ".link-area").position.group.index,
+            item: event.detail.origin.index
+          },
+          destination: {
+            group: helper.getClosest(event.detail.destination.container, ".link-area").position.group.index,
+            item: event.detail.destination.index
+          }
+        });
+        data.save();
       });
     });
   };
@@ -231,7 +199,8 @@ var link = (function() {
         render.item.all();
         render.item.tabindex();
         render.previousFocus();
-        sortable(".link-area-list");
+        // sortable(".link-area-list");
+        bind.sort();
         control.render.dependents();
         control.render.class();
         shade.close();
@@ -283,7 +252,7 @@ var link = (function() {
             stagedLink.position.group.index = index;
             var linkArea = helper.node("div|class:link-area");
             linkArea.position = JSON.parse(JSON.stringify(stagedLink.position));
-            if (arrayItem.items.length > 0) {
+            // if (arrayItem.items.length > 0) {
               if (arrayItem.name != null && arrayItem.name != "") {
                 var linkAreaName = helper.node("h2:" + arrayItem.name);
                 linkArea.appendChild(linkAreaName);
@@ -299,7 +268,7 @@ var link = (function() {
               // append link item
               linkArea.appendChild(linkAreaList);
               linkSection.appendChild(linkArea);
-            };
+            // };
             stagedLink.reset();
           });
         },
@@ -553,9 +522,12 @@ var link = (function() {
       linkItem.appendChild(linkPanelFront);
       linkItem.appendChild(linkPanelBack);
 
+      var copyStagedLinkLink = JSON.parse(JSON.stringify(stagedLink.link));
+      var copyStagedLinkPosition = JSON.parse(JSON.stringify(stagedLink.position));
+
       linkEdit.addEventListener("click", function() {
         _previousFocus = stagedLink.position;
-        render.item.edit(stagedLink);
+        render.item.edit(copyStagedLinkLink, copyStagedLinkPosition);
       }, false);
 
       linkRemove.addEventListener("click", function() {
@@ -565,7 +537,9 @@ var link = (function() {
 
       return linkItem;
     },
-    edit: function(stagedLink) {
+    edit: function(link, position) {
+      stagedLink.link = link;
+      stagedLink.position = position;
       console.log(stagedLink);
       // stagedLink = JSON.parse(JSON.stringify(stagedLink));
       var form = render.form();
@@ -621,7 +595,8 @@ var link = (function() {
           render.item.all();
           render.item.tabindex();
           render.previousFocus();
-          sortable(".link-area-list");
+          // sortable(".link-area-list");
+          bind.sort();
           stagedLink.reset();
           shade.close();
           pagelock.unlock();
@@ -954,7 +929,8 @@ var link = (function() {
           render.clear();
           render.item.all();
           render.item.tabindex();
-          sortable(".link-area-list");
+          // sortable(".link-area-list");
+          bind.sort();
           control.render.dependents();
           control.render.class();
           stagedLink.reset();
@@ -999,7 +975,8 @@ var link = (function() {
   var items = function() {
     render.clear();
     render.item.all();
-    sortable(".link-area-list");
+    // sortable(".link-area-list");
+    bind.sort();
   };
 
   var init = function() {
