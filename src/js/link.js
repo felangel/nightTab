@@ -199,7 +199,6 @@ var link = (function() {
         render.item.all();
         render.item.tabindex();
         render.previousFocus();
-        // sortable(".link-area-list");
         bind.sort();
         control.render.dependents();
         control.render.class();
@@ -253,21 +252,21 @@ var link = (function() {
             var linkArea = helper.node("div|class:link-area");
             linkArea.position = JSON.parse(JSON.stringify(stagedLink.position));
             // if (arrayItem.items.length > 0) {
-              if (arrayItem.name != null && arrayItem.name != "") {
-                var linkAreaName = helper.node("h2:" + arrayItem.name);
-                linkArea.appendChild(linkAreaName);
-              };
-              var linkAreaList = helper.node("div|class:link-area-list");
-              arrayItem.items.forEach(function(arrayItem, index) {
-                stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
-                stagedLink.position.item.index = index;
-                var linkItem = render.item.link();
-                linkItem.position = JSON.parse(JSON.stringify(stagedLink.position));
-                linkAreaList.appendChild(linkItem);
-              });
-              // append link item
-              linkArea.appendChild(linkAreaList);
-              linkSection.appendChild(linkArea);
+            if (arrayItem.name != null && arrayItem.name != "") {
+              var linkAreaName = helper.node("h2:" + arrayItem.name);
+              linkArea.appendChild(linkAreaName);
+            };
+            var linkAreaList = helper.node("div|class:link-area-list");
+            arrayItem.items.forEach(function(arrayItem, index) {
+              stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
+              stagedLink.position.item.index = index;
+              var linkItem = render.item.link();
+              linkItem.position = JSON.parse(JSON.stringify(stagedLink.position));
+              linkAreaList.appendChild(linkItem);
+            });
+            // append link item
+            linkArea.appendChild(linkAreaList);
+            linkSection.appendChild(linkArea);
             // };
             stagedLink.reset();
           });
@@ -541,7 +540,6 @@ var link = (function() {
       stagedLink.link = link;
       stagedLink.position = position;
       console.log(stagedLink);
-      // stagedLink = JSON.parse(JSON.stringify(stagedLink));
       var form = render.form();
       form.querySelector(".link-form-select-group").selectedIndex = stagedLink.position.group.index;
       if (stagedLink.link.display == "letter" || stagedLink.link.display == null) {
@@ -586,28 +584,35 @@ var link = (function() {
         form.querySelector(".link-form-input-accent-picker").value = helper.rgbToHex(stagedLink.link.accent.color);
         form.querySelector(".link-form-input-accent-hex").value = helper.rgbToHex(stagedLink.link.accent.color);
       };
+      var heading;
+      if (stagedLink.link.name != null) {
+        heading = "Edit " + stagedLink.link.name;
+      } else {
+        heading = "Edit unnamed bookmark";
+      };
+      var successAction = function() {
+        bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
+        data.save();
+        render.clear();
+        render.item.all();
+        render.item.tabindex();
+        render.previousFocus();
+        bind.sort();
+        stagedLink.reset();
+        shade.close();
+        pagelock.unlock();
+      };
+      var cancelAction = function() {
+        render.previousFocus();
+        stagedLink.reset();
+        autoSuggest.close();
+        shade.close();
+        pagelock.unlock();
+      };
       modal.open({
-        heading: "Edit " + stagedLink.link.name,
-        successAction: function() {
-          bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
-          data.save();
-          render.clear();
-          render.item.all();
-          render.item.tabindex();
-          render.previousFocus();
-          // sortable(".link-area-list");
-          bind.sort();
-          stagedLink.reset();
-          shade.close();
-          pagelock.unlock();
-        },
-        cancelAction: function() {
-          render.previousFocus();
-          stagedLink.reset();
-          autoSuggest.close();
-          shade.close();
-          pagelock.unlock();
-        },
+        heading: heading,
+        successAction: successAction,
+        cancelAction: cancelAction,
         actionText: "Save",
         size: "small",
         content: form
@@ -929,7 +934,6 @@ var link = (function() {
           render.clear();
           render.item.all();
           render.item.tabindex();
-          // sortable(".link-area-list");
           bind.sort();
           control.render.dependents();
           control.render.class();
@@ -975,7 +979,6 @@ var link = (function() {
   var items = function() {
     render.clear();
     render.item.all();
-    // sortable(".link-area-list");
     bind.sort();
   };
 
