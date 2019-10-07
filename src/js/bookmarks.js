@@ -140,6 +140,9 @@ var bookmarks = (function() {
     if (data.position.origin.group == data.position.destination.group) {
       mod.all[data.position.destination.group].items[data.position.destination.item] = data.link;
     } else {
+      if (data.position.group.new) {
+        mod.add.group(data);
+      };
       var item = JSON.parse(JSON.stringify(mod.all[data.position.origin.group].items[data.position.origin.item]));
       mod.all[data.position.origin.group].items.splice(data.position.origin.item, 1);
       mod.all[data.position.destination.group].items.splice(mod.all[data.position.destination.group].items.length, 0, item);

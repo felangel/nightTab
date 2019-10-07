@@ -548,7 +548,6 @@ var link = (function() {
       stagedLink.position = position;
       stagedLink.position.origin = JSON.parse(JSON.stringify(stagedLink.position.destination));
       var form = render.form();
-
       form.querySelector(".link-form-select-group").selectedIndex = stagedLink.position.destination.group;
       if (stagedLink.link.display == "letter" || stagedLink.link.display == null) {
         form.querySelector(".link-form-input-letter").removeAttribute("disabled");
