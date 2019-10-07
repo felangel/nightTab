@@ -115,18 +115,18 @@ var bookmarks = (function() {
 
   mod.add = {
     link: function(data) {
-      if (data.position.group.new.active) {
+      if (data.position.group.new) {
         mod.add.group(data);
       };
-      mod.all[data.position.group.index].items.push(data.link);
+      mod.all[data.position.destination.group].items.push(data.link);
     },
     group: function(data) {
-      var name = data.position.group.new.name;
+      var name = data.position.group.name;
       if (name != null && typeof name == "string") {
         name = name.trim();
       };
       if (name == "" || name == null || name == undefined) {
-        var count = data.position.group.index + 1;
+        var count = data.position.destination.index + 1;
         name = "Group " + count;
       };
       mod.all.push({
