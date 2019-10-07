@@ -137,8 +137,13 @@ var bookmarks = (function() {
   };
 
   mod.edit = function(data) {
-    console.log(data.position.origin.group == data.position.destination.group && data.position.origin.item == data.position.destination.item);
-    mod.all[data.position.group.index].items[data.position.item.index] = data.link;
+    if (data.position.origin.group == data.position.destination.group) {
+      mod.all[data.position.destination.group].items[data.position.destination.item] = data.link;
+    } else {
+      var item = JSON.parse(JSON.stringify(mod.all[data.position.origin.group].items[data.position.origin.item]));
+      mod.all[data.position.origin.group].items.splice(data.position.origin.item, 1);
+      mod.all[data.position.destination.group].items.splice(mod.all[data.position.destination.group].items.length, 0, item);
+    };
   };
 
   mod.remove = function(data) {
