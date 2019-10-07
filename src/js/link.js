@@ -171,6 +171,12 @@ var link = (function() {
           destination: event.detail.destination.index
         });
         data.save();
+        render.clear();
+        render.item.all();
+        render.item.tabindex();
+        render.previousFocus();
+        bind.sort();
+        stagedLink.reset();
       });
     });
     helper.eA(".link-area-list").forEach(function(arrayItem, index) {
@@ -186,6 +192,12 @@ var link = (function() {
           }
         });
         data.save();
+        render.clear();
+        render.item.all();
+        render.item.tabindex();
+        render.previousFocus();
+        bind.sort();
+        stagedLink.reset();
       });
     });
   };
@@ -606,6 +618,7 @@ var link = (function() {
         render.previousFocus();
         bind.sort();
         stagedLink.reset();
+        autoSuggest.close();
         shade.close();
         pagelock.unlock();
       };
@@ -613,8 +626,8 @@ var link = (function() {
         render.previousFocus();
         stagedLink.reset();
         autoSuggest.close();
-        shade.close();
         pagelock.unlock();
+        shade.close();
       };
       modal.open({
         heading: heading,
@@ -626,8 +639,15 @@ var link = (function() {
       });
       shade.open({
         action: function() {
-          modal.close();
+          render.clear();
+          render.item.all();
+          render.item.tabindex();
+          render.previousFocus();
+          bind.sort();
+          stagedLink.reset();
+          autoSuggest.close();
           pagelock.unlock();
+          modal.close();
         }
       });
     },

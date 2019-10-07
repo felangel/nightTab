@@ -24,21 +24,21 @@ var bookmarks = (function() {
       },
       timeStamp: 1546453108926
     }, {
-      display: "letter",
+      display: "icon",
       letter: "GM",
       icon: {
-        name: "envelope",
+        name: "star",
         prefix: "fas",
-        label: "Envelope"
+        label: "Star"
       },
       name: "Gmail",
       url: "https://mail.google.com/",
       accent: {
-        override: false,
+        override: true,
         color: {
-          r: null,
-          g: null,
-          b: null
+          r: 255,
+          g: 168,
+          b: 0
         }
       },
       timeStamp: 1546453110265
@@ -137,12 +137,12 @@ var bookmarks = (function() {
   };
 
   mod.edit = function(data) {
-    if (data.position.origin.group == data.position.destination.group) {
+    if (data.position.group.new) {
+      mod.add.group(data);
+    };
+    if (data.position.origin.group == data.position.destination.group && !data.position.group.new) {
       mod.all[data.position.destination.group].items[data.position.destination.item] = data.link;
     } else {
-      if (data.position.group.new) {
-        mod.add.group(data);
-      };
       var item = JSON.parse(JSON.stringify(mod.all[data.position.origin.group].items[data.position.origin.item]));
       mod.all[data.position.origin.group].items.splice(data.position.origin.item, 1);
       mod.all[data.position.destination.group].items.splice(mod.all[data.position.destination.group].items.length, 0, item);
