@@ -4,15 +4,17 @@ var link = (function() {
 
   var stagedLink = {
     position: {
-      group: {
-        index: null,
-        new: {
-          active: null,
-          name: null
-        }
+      origin: {
+        group: null,
+        item: null
       },
-      item: {
-        index: null
+      destination: {
+        group: null,
+        item: null
+      },
+      group: {
+        new: null,
+        name: null
       }
     },
     link: {
@@ -38,17 +40,22 @@ var link = (function() {
   };
 
   stagedLink.init = function() {
-    stagedLink.position.group.index = 0;
-    stagedLink.position.group.new.active = false;
+    stagedLink.position.origin.group = 0;
+    stagedLink.position.origin.item = 0;
+    stagedLink.position.destination.group = 0;
+    stagedLink.position.destination.item = 0;
+    stagedLink.position.group.new = false;
     stagedLink.link.display = "letter";
     stagedLink.link.accent.override = false;
   };
 
   stagedLink.reset = function() {
-    stagedLink.position.group.index = null;
-    stagedLink.position.group.new.active = null;
-    stagedLink.position.group.new.name = null;
-    stagedLink.position.item.index = null;
+    stagedLink.position.origin.group = null;
+    stagedLink.position.origin.item = null;
+    stagedLink.position.destination.group = null;
+    stagedLink.position.destination.item = null;
+    stagedLink.position.group.new = null;
+    stagedLink.position.group.name = null;
     stagedLink.link.display = null;
     stagedLink.link.letter = null;
     stagedLink.link.icon.name = null;
@@ -170,11 +177,11 @@ var link = (function() {
       sortable(arrayItem)[0].addEventListener("sortupdate", function(event) {
         bookmarks.mod.move.link({
           origin: {
-            group: helper.getClosest(event.detail.origin.container, ".link-area").position.group.index,
+            group: helper.getClosest(event.detail.origin.container, ".link-area").position.destination.group,
             item: event.detail.origin.index
           },
           destination: {
-            group: helper.getClosest(event.detail.destination.container, ".link-area").position.group.index,
+            group: helper.getClosest(event.detail.destination.container, ".link-area").position.destination.group,
             item: event.detail.destination.index
           }
         });
@@ -248,7 +255,7 @@ var link = (function() {
       var action = {
         bookmarks: function(data) {
           data.forEach(function(arrayItem, index) {
-            stagedLink.position.group.index = index;
+            stagedLink.position.destination.group = index;
             var linkArea = helper.node("div|class:link-area");
             linkArea.position = JSON.parse(JSON.stringify(stagedLink.position));
             // if (arrayItem.items.length > 0) {
@@ -259,7 +266,7 @@ var link = (function() {
             var linkAreaList = helper.node("div|class:link-area-list");
             arrayItem.items.forEach(function(arrayItem, index) {
               stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
-              stagedLink.position.item.index = index;
+              stagedLink.position.destination.item = index;
               var linkItem = render.item.link();
               linkItem.position = JSON.parse(JSON.stringify(stagedLink.position));
               linkAreaList.appendChild(linkItem);
@@ -539,9 +546,10 @@ var link = (function() {
     edit: function(link, position) {
       stagedLink.link = link;
       stagedLink.position = position;
-      console.log(stagedLink);
+      stagedLink.position.origin = JSON.parse(JSON.stringify(stagedLink.position.destination));
       var form = render.form();
-      form.querySelector(".link-form-select-group").selectedIndex = stagedLink.position.group.index;
+
+      form.querySelector(".link-form-select-group").selectedIndex = stagedLink.position.destination.group;
       if (stagedLink.link.display == "letter" || stagedLink.link.display == null) {
         form.querySelector(".link-form-input-letter").removeAttribute("disabled");
         form.querySelector(".link-form-input-icon").setAttribute("disabled", "");
@@ -812,22 +820,22 @@ var link = (function() {
     form.appendChild(fieldset);
 
     groupExistingRadio.addEventListener("change", function(event) {
-      stagedLink.position.group.new.active = false;
-      stagedLink.position.group.index = groupExistingSelect.selectedIndex;
+      stagedLink.position.destination.group = groupExistingSelect.selectedIndex;
+      stagedLink.position.group.new = false;
       groupExistingSelect.removeAttribute("disabled");
       groupNewInput.setAttribute("disabled", "");
     }, false);
     groupExistingSelect.addEventListener("change", function(event) {
-      stagedLink.position.group.index = this.selectedIndex;
+      stagedLink.position.destination.group = this.selectedIndex;
     }, false);
     groupNewRadio.addEventListener("change", function(event) {
-      stagedLink.position.group.new.active = true;
-      stagedLink.position.group.index = bookmarks.get().length;
+      stagedLink.position.destination.group = bookmarks.get().length;
+      stagedLink.position.group.new = true;
       groupExistingSelect.setAttribute("disabled", "");
       groupNewInput.removeAttribute("disabled");
     }, false);
     groupNewInput.addEventListener("input", function(event) {
-      stagedLink.position.group.new.name = this.value;
+      stagedLink.position.group.name = this.value;
     }, false);
     displayLetterRadio.addEventListener("change", function(event) {
       stagedLink.link.display = this.value;

@@ -137,6 +137,7 @@ var bookmarks = (function() {
   };
 
   mod.edit = function(data) {
+    console.log(data.position.origin.group == data.position.destination.group && data.position.origin.item == data.position.destination.item);
     mod.all[data.position.group.index].items[data.position.item.index] = data.link;
   };
 
