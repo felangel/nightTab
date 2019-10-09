@@ -118,7 +118,7 @@ var bookmarks = (function() {
       if (data.position.group.new) {
         mod.add.group(data);
       };
-      mod.all[data.position.destination.group].items.push(data.link);
+      mod.all[data.position.destination.group].items.splice(data.position.destination.item, 0, data.link);
     },
     group: function(data) {
       var name = data.position.group.name;

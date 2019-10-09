@@ -20,11 +20,7 @@ var keyboard = (function() {
           modal.close();
           shade.close();
         } else if (state.get().link.edit) {
-          helper.setObject({
-            object: state.get(),
-            path: "link.edit",
-            newValue: false
-          });
+          link.add.close();
           control.render.update();
           control.render.class();
         };

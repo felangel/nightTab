@@ -582,6 +582,8 @@ var link = (function() {
       stagedLink.position = position;
       stagedLink.position.origin = JSON.parse(JSON.stringify(stagedLink.position.destination));
       var form = render.form();
+      // console.log(form.querySelector(".link-form-position").querySelectorAll("option"));
+      form.querySelector(".link-form-position").selectedIndex = stagedLink.position.origin.item
       form.querySelector(".link-form-select-group").selectedIndex = stagedLink.position.destination.group;
       if (stagedLink.link.display == "letter" || stagedLink.link.display == null) {
         form.querySelector(".link-form-input-letter").removeAttribute("disabled");
@@ -737,8 +739,11 @@ var link = (function() {
     var groupExistingRadio = helper.node("input|class:link-form-input-group-existing,id:link-form-input-group-existing,type:radio,name:link-form-input-group,tabindex:1,checked,value:existing");
     var groupExistingLable = helper.node("label:Existing group|for:link-form-input-group-existing");
     var groupExistingFormIndent = helper.node("div|class:form-indent");
-    var groupExistingInputWrap = helper.node("div|class:input-wrap");
-    var groupExistingSelect = helper.node("select|id:link-form-select-group,class:link-form-select-group mb-0,tabindex:1");
+    var groupExistingGroupInputWrap = helper.node("div|class:input-wrap");
+    var groupExistingGroup = helper.node("select|id:link-form-select-group,class:link-form-select-group mb-0,tabindex:1");
+    var groupExistingPositionLabel = helper.node("label:Position|for:link-form-position");
+    var groupExistingPositionInputWrap = helper.node("div|class:input-wrap");
+    var groupExistingPosition = helper.node("select|id:link-form-position,class:link-form-position mb-0,tabindex:1");
 
     // group new
     var groupNewRadioWrap = helper.node("div|class:input-wrap");
@@ -804,14 +809,23 @@ var link = (function() {
 
     groupExistingRadioWrap.appendChild(groupExistingRadio);
     groupExistingRadioWrap.appendChild(groupExistingLable);
-    groupExistingInputWrap.appendChild(groupExistingSelect);
-    bookmarks.get().forEach(function(arrayItem, index) {
-      var option = helper.node("option:" + arrayItem.name + "|value:" + arrayItem.name);
-      groupExistingSelect.appendChild(option);
-    });
-    groupExistingFormIndent.appendChild(groupExistingInputWrap);
+    groupExistingGroupInputWrap.appendChild(groupExistingGroup);
+    groupExistingPositionInputWrap.appendChild(groupExistingPositionLabel);
+    groupExistingPositionInputWrap.appendChild(groupExistingPosition);
+    groupExistingFormIndent.appendChild(groupExistingGroupInputWrap);
+    groupExistingFormIndent.appendChild(groupExistingPositionInputWrap);
     fieldset.appendChild(groupExistingRadioWrap);
     fieldset.appendChild(groupExistingFormIndent);
+    bookmarks.get().forEach(function(arrayItem, index) {
+      var option = helper.node("option:" + arrayItem.name + "|value:" + arrayItem.name);
+      groupExistingGroup.appendChild(option);
+    });
+    var optionCount = bookmarks.get()[groupExistingGroup.selectedIndex].items.length + 1;
+    for (var i = 1; i <= optionCount; i++) {
+      var option = helper.node("option:" + i);
+      groupExistingPosition.appendChild(option);
+    };
+    groupExistingPosition.selectedIndex = optionCount - 1;
 
     groupNewRadioWrap.appendChild(groupNewRadio);
     groupNewRadioWrap.appendChild(groupNewLable);
@@ -863,18 +877,34 @@ var link = (function() {
     form.appendChild(fieldset);
 
     groupExistingRadio.addEventListener("change", function(event) {
-      stagedLink.position.destination.group = groupExistingSelect.selectedIndex;
+      stagedLink.position.destination.group = groupExistingGroup.selectedIndex;
       stagedLink.position.group.new = false;
-      groupExistingSelect.removeAttribute("disabled");
+      groupExistingGroup.removeAttribute("disabled");
+      groupExistingPosition.removeAttribute("disabled");
+      helper.removeClass(groupExistingPositionLabel, "disabled");
       groupNewInput.setAttribute("disabled", "");
     }, false);
-    groupExistingSelect.addEventListener("change", function(event) {
+    groupExistingGroup.addEventListener("change", function(event) {
       stagedLink.position.destination.group = this.selectedIndex;
+      var linkCount = bookmarks.get()[groupExistingGroup.selectedIndex].items.length + 2;
+      while (groupExistingPosition.lastChild) {
+        groupExistingPosition.removeChild(groupExistingPosition.lastChild);
+      };
+      for (var i = 1; i < linkCount; i++) {
+        var option = helper.node("option:" + i);
+        groupExistingPosition.appendChild(option);
+      };
+      groupExistingPosition.selectedIndex = linkCount - 2;
+    }, false);
+    groupExistingPosition.addEventListener("change", function(event) {
+      stagedLink.position.destination.item = groupExistingPosition.selectedIndex;
     }, false);
     groupNewRadio.addEventListener("change", function(event) {
       stagedLink.position.destination.group = bookmarks.get().length;
       stagedLink.position.group.new = true;
-      groupExistingSelect.setAttribute("disabled", "");
+      groupExistingGroup.setAttribute("disabled", "");
+      groupExistingPosition.setAttribute("disabled", "");
+      helper.addClass(groupExistingPositionLabel, "disabled");
       groupNewInput.removeAttribute("disabled");
     }, false);
     groupNewInput.addEventListener("input", function(event) {
@@ -975,31 +1005,33 @@ var link = (function() {
     open: function() {
       mod.add.open();
       stagedLink.init();
+      var successAction = function() {
+        stagedLink.link.timeStamp = new Date().getTime();
+        bookmarks.mod.add.link(JSON.parse(JSON.stringify(stagedLink)));
+        data.save();
+        mod.add.close();
+        render.clear();
+        render.item.all();
+        render.item.tabindex();
+        bind.sort.group();
+        bind.sort.link();
+        control.render.dependents();
+        control.render.class();
+        stagedLink.reset();
+        shade.close();
+        pagelock.unlock();
+      };
+      var cancelAction = function() {
+        mod.add.close();
+        stagedLink.reset();
+        autoSuggest.close();
+        shade.close();
+        pagelock.unlock();
+      };
       modal.open({
         heading: "Add a new bookmark",
-        successAction: function() {
-          stagedLink.link.timeStamp = new Date().getTime();
-          bookmarks.mod.add.link(JSON.parse(JSON.stringify(stagedLink)));
-          data.save();
-          mod.add.close();
-          render.clear();
-          render.item.all();
-          render.item.tabindex();
-          bind.sort.group();
-          bind.sort.link();
-          control.render.dependents();
-          control.render.class();
-          stagedLink.reset();
-          shade.close();
-          pagelock.unlock();
-        },
-        cancelAction: function() {
-          mod.add.close();
-          stagedLink.reset();
-          autoSuggest.close();
-          shade.close();
-          pagelock.unlock();
-        },
+        successAction: successAction,
+        cancelAction: cancelAction,
         actionText: "Add",
         size: "small",
         content: render.form()
@@ -1008,14 +1040,17 @@ var link = (function() {
         action: function() {
           mod.add.close();
           modal.close();
+          stagedLink.reset();
           pagelock.unlock();
         }
       });
+      stagedLink.position.destination.item = helper.e(".link-form-position").selectedIndex;
       pagelock.lock();
     },
     close: function() {
       mod.add.close();
       modal.close();
+      stagedLink.reset();
       pagelock.unlock();
     }
   };
