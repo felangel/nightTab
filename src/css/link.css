@@ -33,10 +33,7 @@
 
 .link-area-list {
   font-size: calc(var(--link-item-size) * 1);
-  border-width: var(--layout-line-width);
-  border-style: solid;
-  border-color: transparent;
-  border-radius: var(--theme-radius);
+  background-color: transparent;
   position: relative;
   width: var(--link-area-width);
   min-height: var(--link-item-height);
@@ -44,28 +41,54 @@
   grid-auto-rows: 1fr;
   grid-gap: calc(var(--layout-space) * var(--layout-gutter));
   grid-template-columns: repeat(auto-fill, minmax(var(--link-item-width), 1fr));
-  transition: min-height var(--layout-timing-extra-slow), border-color var(--layout-timing-extra-slow);
-}
-
-.link-area-list:after {
-  content: "Empty";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  color: rgb(var(--theme-gray-08));
-  font-size: 0.8em;
-  transform: translate(-50%, -50%);
-  display: none;
 }
 
 .link-area-list:empty {
-  border-color: rgb(var(--theme-gray-02));
+  background-color: rgba(var(--theme-gray-02), 0.5);
+  border-radius: var(--theme-radius);
 }
 
+.link-area-list:empty:before {
+  content: "Empty group";
+  margin-bottom: 0.5em;
+  color: rgb(var(--theme-gray-06));
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 
+
+.link-area-list:before,
+.link-area-list:after {
+  content: "";
+  position: absolute;
+  border-style: solid;
+  border-color: transparent;
+  height: 2em;
+  width: 2em;
+}
+
+.link-area-list:before {
+  border-top-left-radius: var(--theme-radius);
+  top: 0;
+  left: 0;
+  border-width: var(--layout-line-width) 0 0 var(--layout-line-width);
+}
+
+.link-area-list:after {
+  border-bottom-right-radius: var(--theme-radius);
+  bottom: 0;
+  right: 0;
+  border-width: 0 var(--layout-line-width) var(--layout-line-width) 0;
+}
+
+.link-area-list:empty:before,
 .link-area-list:empty:after {
-  display: block;
-}
-
+  border-style: solid;
+  border-color: rgb(var(--theme-gray-03));
+} */
 .is-layout-order-headerlink .link-area {
   padding-bottom: calc(var(--layout-space) * var(--layout-padding));
 }

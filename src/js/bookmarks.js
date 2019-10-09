@@ -181,6 +181,18 @@ var bookmarks = (function() {
     }
   };
 
+  mod.count = function() {
+    var count = 0;
+    mod.all.forEach(function(arrayItem, index) {
+      count = count + arrayItem.items.length
+    });
+    return count;
+  };
+
+  var count = function() {
+    return mod.count();
+  };
+
   var get = function(data) {
     return mod.get(data);
   };
@@ -210,6 +222,7 @@ var bookmarks = (function() {
     get: get,
     edit: edit,
     sort: sort,
+    count: count,
     remove: remove
   };
 

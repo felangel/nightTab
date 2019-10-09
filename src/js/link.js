@@ -307,10 +307,8 @@ var link = (function() {
               linkItem.position = JSON.parse(JSON.stringify(stagedLink.position));
               linkAreaList.appendChild(linkItem);
             });
-            // append link item
             linkArea.appendChild(linkAreaList);
             linkSection.appendChild(linkArea);
-            // };
             stagedLink.reset();
           });
         },
