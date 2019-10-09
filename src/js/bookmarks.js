@@ -126,7 +126,7 @@ var bookmarks = (function() {
         name = name.trim();
       };
       if (name == "" || name == null || name == undefined) {
-        var count = data.position.destination.index + 1;
+        var count = get().length + 1;
         name = "Group " + count;
       };
       mod.all.push({
@@ -150,10 +150,7 @@ var bookmarks = (function() {
   };
 
   mod.remove = function(data) {
-    mod.all[data.position.group.index].items.splice(data.position.item.index, 1);
-    // if (mod.all[data.position.group.index].items.length == 0) {
-    //   mod.all.splice(data.position.group.index, 1);
-    // };
+    mod.all[data.position.destination.group].items.splice(data.position.destination.item, 1);
   };
 
   mod.sort = function(by) {
@@ -178,7 +175,9 @@ var bookmarks = (function() {
       mod.all[data.destination.group].items.splice(data.destination.item, 0, item);
     },
     group: function(data) {
-      mod.all = helper.moveArrayItem(mod.all, data.origin, data.destination);
+      var group = JSON.parse(JSON.stringify(mod.all[data.origin.group]));
+      mod.all.splice(data.origin.group, 1);
+      mod.all.splice(data.destination.group, 0, group);
     }
   };
 
