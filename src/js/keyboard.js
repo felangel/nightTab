@@ -16,13 +16,13 @@ var keyboard = (function() {
         } else if (state.get().link.add) {
           link.add.close();
           shade.close();
-        } else if (state.get().modal) {
-          modal.close();
-          shade.close();
         } else if (state.get().link.edit) {
           link.add.close();
           control.render.update();
           control.render.class();
+        } else if (state.get().modal) {
+          modal.close();
+          shade.close();
         };
         data.save();
       };
