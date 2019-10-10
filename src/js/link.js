@@ -153,16 +153,9 @@ var link = (function() {
   var bind = {};
 
   bind.sort = {
-    group: function() {
-      sortable(".link", "destroy");
-      sortable(".link", {
-        items: ".link-area",
-        handle: ".link-area-name",
-        placeholder: helper.node("div|class:link-placeholder"),
-        forcePlaceholderSize: true
-      });
-      helper.eA(".link").forEach(function(arrayItem, index) {
-        sortable(arrayItem)[0].addEventListener("sortupdate", function(event) {
+    update: {
+      func: {
+        group: function(event) {
           bookmarks.mod.move.group({
             origin: {
               group: event.detail.origin.index
@@ -172,21 +165,14 @@ var link = (function() {
             }
           });
           data.save();
-        });
-      });
-    },
-    link: function() {
-      sortable(".link-area-list", "destroy");
-      sortable(".link-area-list", {
-        items: ".link-item",
-        handle: ".link-control-item-handle",
-        acceptFrom: '.link-area-list',
-        orientation: "horizontal",
-        placeholder: helper.node("div|class:link-placeholder"),
-        forcePlaceholderSize: true
-      });
-      helper.eA(".link-area-list").forEach(function(arrayItem, index) {
-        sortable(arrayItem)[0].addEventListener("sortupdate", function(event) {
+          render.clear();
+          render.item.all();
+          render.item.tabindex();
+          render.previousFocus();
+          bind.sort.group();
+          bind.sort.item();
+        },
+        item: function(event) {
           bookmarks.mod.move.link({
             origin: {
               group: Array.from(helper.getClosest(event.detail.origin.container, ".link-area").parentNode.children).indexOf(helper.getClosest(event.detail.origin.container, ".link-area")),
@@ -198,7 +184,51 @@ var link = (function() {
             }
           });
           data.save();
-        });
+          render.clear();
+          render.item.all();
+          render.item.tabindex();
+          render.previousFocus();
+          bind.sort.group();
+          bind.sort.item();
+        }
+      },
+      remove: {
+        group: function() {
+          helper.eA(".link").forEach(function(arrayItem, index) {
+            sortable(arrayItem)[0].removeEventListener("sortupdate", bind.sort.update.func.group, false);
+          });
+        },
+        item: function() {
+          helper.eA(".link-area-list").forEach(function(arrayItem, index) {
+            sortable(arrayItem)[0].removeEventListener("sortupdate", bind.sort.update.func.item, false);
+          });
+        }
+      }
+    },
+    group: function() {
+      sortable(".link", {
+        items: ".link-area",
+        handle: ".link-area-name",
+        placeholder: helper.node("div|class:link-placeholder"),
+        forcePlaceholderSize: true
+      });
+      bind.sort.update.remove.group();
+      helper.eA(".link").forEach(function(arrayItem, index) {
+        sortable(arrayItem)[0].addEventListener("sortupdate", bind.sort.update.func.group, false, event);
+      });
+    },
+    item: function() {
+      sortable(".link-area-list", {
+        items: ".link-item",
+        handle: ".link-control-item-handle",
+        acceptFrom: '.link-area-list',
+        orientation: "horizontal",
+        placeholder: helper.node("div|class:link-placeholder"),
+        forcePlaceholderSize: true
+      });
+      bind.sort.update.remove.item();
+      helper.eA(".link-area-list").forEach(function(arrayItem, index) {
+        sortable(arrayItem)[0].addEventListener("sortupdate", bind.sort.update.func.item, false, event);
       });
     }
   };
@@ -226,7 +256,7 @@ var link = (function() {
       render.item.tabindex();
       render.previousFocus();
       bind.sort.group();
-      bind.sort.link();
+      bind.sort.item();
       stagedLink.reset();
       control.render.dependents();
       control.render.class();
@@ -253,7 +283,7 @@ var link = (function() {
         render.item.tabindex();
         render.previousFocus();
         bind.sort.group();
-        bind.sort.link();
+        bind.sort.item();
         stagedLink.reset();
         autoSuggest.close();
         pagelock.unlock();
@@ -598,7 +628,7 @@ var link = (function() {
         render.item.tabindex();
         render.previousFocus();
         bind.sort.group();
-        bind.sort.link();
+        bind.sort.item();
         stagedLink.reset();
         autoSuggest.close();
         shade.close();
@@ -626,7 +656,7 @@ var link = (function() {
           render.item.tabindex();
           render.previousFocus();
           bind.sort.group();
-          bind.sort.link();
+          bind.sort.item();
           stagedLink.reset();
           autoSuggest.close();
           pagelock.unlock();
@@ -841,24 +871,22 @@ var link = (function() {
       };
       var optionCount;
       if (options.useStagedLink && stagedLink.position.origin.group == stagedLink.position.destination.group) {
-        optionCount = bookmarks.get()[groupExistingGroup.selectedIndex].items.length;
+        optionCount = bookmarks.get()[stagedLink.position.origin.group].items.length;
       } else {
-        optionCount = bookmarks.get()[groupExistingGroup.selectedIndex].items.length + 1;
+        optionCount = bookmarks.get()[stagedLink.position.destination.group].items.length + 1;
       };
       if (optionCount > 0) {
         for (var i = 1; i <= optionCount; i++) {
-          groupExistingPosition.appendChild(helper.node("option:" + i));
+          groupExistingPosition.appendChild(helper.node("option:" + helper.ordinalNumber(i)));
         };
-        groupExistingPosition.selectedIndex = optionCount - 1;
       } else {
         groupExistingPosition.appendChild(helper.node("option:1"));
-        groupExistingPosition.selectedIndex = optionCount;
       };
     };
 
     var populateForm = function() {
       groupExistingGroup.selectedIndex = stagedLink.position.origin.group;
-      groupExistingPosition.selectedIndex = stagedLink.position.origin.item
+      groupExistingPosition.selectedIndex = stagedLink.position.origin.item;
       if (stagedLink.link.display == "letter") {
         displayLetterInput.removeAttribute("disabled");
         displayIconInput.setAttribute("disabled", "");
@@ -920,6 +948,7 @@ var link = (function() {
     groupExistingGroup.addEventListener("change", function(event) {
       stagedLink.position.destination.group = this.selectedIndex;
       makePostionOptions();
+      // groupExistingPosition.selectedIndex = bookmarks.get()[stagedLink.position.destination.group].items.length;
       stagedLink.position.destination.item = groupExistingPosition.selectedIndex;
     }, false);
     groupExistingPosition.addEventListener("change", function(event) {
@@ -1040,7 +1069,7 @@ var link = (function() {
         render.item.all();
         render.item.tabindex();
         bind.sort.group();
-        bind.sort.link();
+        bind.sort.item();
         control.render.dependents();
         control.render.class();
         stagedLink.reset();
@@ -1093,7 +1122,7 @@ var link = (function() {
     render.clear();
     render.item.all();
     bind.sort.group();
-    bind.sort.link();
+    bind.sort.item();
   };
 
   var init = function() {
@@ -1107,7 +1136,7 @@ var link = (function() {
     render.item.name();
     render.item.border();
     bind.sort.group();
-    bind.sort.link();
+    bind.sort.item();
   };
 
   // exposed methods
@@ -1119,10 +1148,8 @@ var link = (function() {
     edit: edit,
     items: items,
     tabindex: tabindex,
-
-
+    // temp
     stagedLink: stagedLink
-
   };
 
 })();
