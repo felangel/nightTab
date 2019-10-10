@@ -140,13 +140,9 @@ var bookmarks = (function() {
     if (data.position.group.new) {
       mod.add.group(data);
     };
-    if (data.position.origin.group == data.position.destination.group && !data.position.group.new) {
-      mod.all[data.position.destination.group].items[data.position.destination.item] = data.link;
-    } else {
-      var item = JSON.parse(JSON.stringify(mod.all[data.position.origin.group].items[data.position.origin.item]));
-      mod.all[data.position.origin.group].items.splice(data.position.origin.item, 1);
-      mod.all[data.position.destination.group].items.splice(mod.all[data.position.destination.group].items.length, 0, item);
-    };
+    var item = JSON.parse(JSON.stringify(data.link));
+    mod.all[data.position.origin.group].items.splice(data.position.origin.item, 1);
+    mod.all[data.position.destination.group].items.splice(data.position.destination.item, 0, item);
   };
 
   mod.remove = function(data) {

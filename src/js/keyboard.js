@@ -18,6 +18,7 @@ var keyboard = (function() {
           shade.close();
         } else if (state.get().link.edit) {
           link.add.close();
+          shade.close();
           control.render.update();
           control.render.class();
         } else if (state.get().modal) {

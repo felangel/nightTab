@@ -581,52 +581,9 @@ var link = (function() {
       stagedLink.link = link;
       stagedLink.position = position;
       stagedLink.position.origin = JSON.parse(JSON.stringify(stagedLink.position.destination));
-      var form = render.form();
-      // console.log(form.querySelector(".link-form-position").querySelectorAll("option"));
-      form.querySelector(".link-form-position").selectedIndex = stagedLink.position.origin.item
-      form.querySelector(".link-form-select-group").selectedIndex = stagedLink.position.destination.group;
-      if (stagedLink.link.display == "letter" || stagedLink.link.display == null) {
-        form.querySelector(".link-form-input-letter").removeAttribute("disabled");
-        form.querySelector(".link-form-input-icon").setAttribute("disabled", "");
-        helper.addClass(form.querySelector(".form-group-text"), "disabled");
-        form.querySelector(".link-form-input-icon").setAttribute("disabled", "");
-        helper.addClass(form.querySelector(".link-form-input-icon-helper"), "disabled");
-        form.querySelector(".link-form-icon-clear").setAttribute("disabled", "");
-        form.querySelector(".link-form-text-icon").tabIndex = -1;
-      } else if (stagedLink.link.display == "icon") {
-        form.querySelector(".link-form-input-letter").setAttribute("disabled", "");
-        form.querySelector(".link-form-input-icon").removeAttribute("disabled");
-        helper.removeClass(form.querySelector(".form-group-text"), "disabled");
-        form.querySelector(".link-form-input-icon").removeAttribute("disabled");
-        helper.removeClass(form.querySelector(".link-form-input-icon-helper"), "disabled");
-        form.querySelector(".link-form-icon-clear").removeAttribute("disabled");
-        form.querySelector(".link-form-input-display-icon").checked = true;
-        form.querySelector(".link-form-text-icon").tabIndex = 1;
-      };
-      if (stagedLink.link.icon.name != null && stagedLink.link.icon.prefix != null && stagedLink.link.icon.label != null) {
-        form.querySelector(".link-form-text-icon").appendChild(helper.node("span|class:link-form-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name));
-      };
-      form.querySelector(".link-form-input-letter").value = stagedLink.link.letter;
-      form.querySelector(".link-form-input-icon").value = stagedLink.link.icon.label;
-      form.querySelector(".link-form-input-name").value = stagedLink.link.name;
-      form.querySelector(".link-form-input-url").value = stagedLink.link.url;
-      if (stagedLink.link.accent.override) {
-        form.querySelector(".link-form-input-accent-global").checked = false;
-        form.querySelector(".link-form-input-accent-custom").checked = true;
-        form.querySelector(".link-form-input-accent-picker").removeAttribute("disabled");
-        form.querySelector(".link-form-input-accent-hex").removeAttribute("disabled");
-        helper.removeClass(form.querySelector(".link-form-input-accent-helper"), "disabled");
-      } else {
-        form.querySelector(".link-form-input-accent-global").checked = true;
-        form.querySelector(".link-form-input-accent-custom").checked = false;
-        form.querySelector(".link-form-input-accent-picker").setAttribute("disabled", "");
-        form.querySelector(".link-form-input-accent-hex").setAttribute("disabled", "");
-        helper.addClass(form.querySelector(".link-form-input-accent-helper"), "disabled");
-      };
-      if (stagedLink.link.accent.color.r != null && stagedLink.link.accent.color.g != null && stagedLink.link.accent.color.b != null) {
-        form.querySelector(".link-form-input-accent-picker").value = helper.rgbToHex(stagedLink.link.accent.color);
-        form.querySelector(".link-form-input-accent-hex").value = helper.rgbToHex(stagedLink.link.accent.color);
-      };
+      var form = render.form({
+        useStagedLink: true
+      });
       var heading;
       if (stagedLink.link.name != null && stagedLink.link.name != "") {
         heading = "Edit " + stagedLink.link.name;
@@ -730,7 +687,13 @@ var link = (function() {
     };
   };
 
-  render.form = function() {
+  render.form = function(override) {
+    var options = {
+      useStagedLink: null
+    };
+    if (override) {
+      options = helper.applyOptions(options, override);
+    };
     var form = helper.node("form|class:link-form");
     var fieldset = helper.node("fieldset");
 
@@ -816,16 +779,6 @@ var link = (function() {
     groupExistingFormIndent.appendChild(groupExistingPositionInputWrap);
     fieldset.appendChild(groupExistingRadioWrap);
     fieldset.appendChild(groupExistingFormIndent);
-    bookmarks.get().forEach(function(arrayItem, index) {
-      var option = helper.node("option:" + arrayItem.name + "|value:" + arrayItem.name);
-      groupExistingGroup.appendChild(option);
-    });
-    var optionCount = bookmarks.get()[groupExistingGroup.selectedIndex].items.length + 1;
-    for (var i = 1; i <= optionCount; i++) {
-      var option = helper.node("option:" + i);
-      groupExistingPosition.appendChild(option);
-    };
-    groupExistingPosition.selectedIndex = optionCount - 1;
 
     groupNewRadioWrap.appendChild(groupNewRadio);
     groupNewRadioWrap.appendChild(groupNewLable);
@@ -876,6 +829,86 @@ var link = (function() {
     fieldset.appendChild(accentColorFormIndent);
     form.appendChild(fieldset);
 
+    var makeGroupOptions = function() {
+      bookmarks.get().forEach(function(arrayItem, index) {
+        groupExistingGroup.appendChild(helper.node("option:" + arrayItem.name + "|value:" + arrayItem.name));
+      });
+    };
+
+    var makePostionOptions = function() {
+      while (groupExistingPosition.lastChild) {
+        groupExistingPosition.removeChild(groupExistingPosition.lastChild);
+      };
+      var optionCount;
+      if (options.useStagedLink && stagedLink.position.origin.group == stagedLink.position.destination.group) {
+        optionCount = bookmarks.get()[groupExistingGroup.selectedIndex].items.length;
+      } else {
+        optionCount = bookmarks.get()[groupExistingGroup.selectedIndex].items.length + 1;
+      };
+      if (optionCount > 0) {
+        for (var i = 1; i <= optionCount; i++) {
+          groupExistingPosition.appendChild(helper.node("option:" + i));
+        };
+        groupExistingPosition.selectedIndex = optionCount - 1;
+      } else {
+        groupExistingPosition.appendChild(helper.node("option:1"));
+        groupExistingPosition.selectedIndex = optionCount;
+      };
+    };
+
+    var populateForm = function() {
+      groupExistingGroup.selectedIndex = stagedLink.position.origin.group;
+      groupExistingPosition.selectedIndex = stagedLink.position.origin.item
+      if (stagedLink.link.display == "letter") {
+        displayLetterInput.removeAttribute("disabled");
+        displayIconInput.setAttribute("disabled", "");
+        helper.addClass(displayIconFormGroupText, "disabled");
+        displayIconInput.setAttribute("disabled", "");
+        helper.addClass(displayIconHelper, "disabled");
+        displayIconFormGroupClear.setAttribute("disabled", "");
+        displayIconFormGroupText.tabIndex = -1;
+      } else if (stagedLink.link.display == "icon") {
+        displayLetterInput.setAttribute("disabled", "");
+        displayIconInput.removeAttribute("disabled");
+        helper.removeClass(displayIconFormGroupText, "disabled");
+        displayIconInput.removeAttribute("disabled");
+        helper.removeClass(displayIconHelper, "disabled");
+        displayIconFormGroupClear.removeAttribute("disabled");
+        displayIconRadio.checked = true;
+        displayIconFormGroupText.tabIndex = 1;
+      };
+      if (stagedLink.link.icon.name != null && stagedLink.link.icon.prefix != null && stagedLink.link.icon.label != null) {
+        displayIconFormGroupText.appendChild(helper.node("span|class:link-form-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name));
+      };
+      displayLetterInput.value = stagedLink.link.letter;
+      displayIconInput.value = stagedLink.link.icon.label;
+      nameInput.value = stagedLink.link.name;
+      urlLabel.value = stagedLink.link.url;
+      if (stagedLink.link.accent.override) {
+        accentGlobalRadio.checked = false;
+        accentCustomRadio.checked = true;
+        accentColorPicker.removeAttribute("disabled");
+        accentColorHex.removeAttribute("disabled");
+        helper.removeClass(form.querySelector(".link-form-input-accent-helper"), "disabled");
+      } else {
+        accentGlobalRadio.checked = true;
+        accentCustomRadio.checked = false;
+        accentColorPicker.setAttribute("disabled", "");
+        accentColorHex.setAttribute("disabled", "");
+        helper.addClass(form.querySelector(".link-form-input-accent-helper"), "disabled");
+      };
+      if (stagedLink.link.accent.color.r != null && stagedLink.link.accent.color.g != null && stagedLink.link.accent.color.b != null) {
+        accentColorPicker.value = helper.rgbToHex(stagedLink.link.accent.color);
+        accentColorHex.value = helper.rgbToHex(stagedLink.link.accent.color);
+      };
+    };
+
+    makeGroupOptions();
+    makePostionOptions();
+    if (options.useStagedLink) {
+      populateForm();
+    };
+
     groupExistingRadio.addEventListener("change", function(event) {
       stagedLink.position.destination.group = groupExistingGroup.selectedIndex;
       stagedLink.position.group.new = false;
@@ -886,18 +919,11 @@ var link = (function() {
     }, false);
     groupExistingGroup.addEventListener("change", function(event) {
       stagedLink.position.destination.group = this.selectedIndex;
-      var linkCount = bookmarks.get()[groupExistingGroup.selectedIndex].items.length + 2;
-      while (groupExistingPosition.lastChild) {
-        groupExistingPosition.removeChild(groupExistingPosition.lastChild);
-      };
-      for (var i = 1; i < linkCount; i++) {
-        var option = helper.node("option:" + i);
-        groupExistingPosition.appendChild(option);
-      };
-      groupExistingPosition.selectedIndex = linkCount - 2;
+      makePostionOptions();
+      stagedLink.position.destination.item = groupExistingPosition.selectedIndex;
     }, false);
     groupExistingPosition.addEventListener("change", function(event) {
-      stagedLink.position.destination.item = groupExistingPosition.selectedIndex;
+      stagedLink.position.destination.item = this.selectedIndex;
     }, false);
     groupNewRadio.addEventListener("change", function(event) {
       stagedLink.position.destination.group = bookmarks.get().length;
