@@ -236,10 +236,9 @@ var link = (function() {
 
   var render = {};
 
-  render.remove = function(link, position) {
-    stagedLink.link = link;
-    stagedLink.position = position;
-    stagedLink.position.origin = JSON.parse(JSON.stringify(stagedLink.position.destination));
+  render.remove = function(copyStagedLink) {
+    stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
+    stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
     var heading;
     if (stagedLink.link.name != null && stagedLink.link.name != "") {
       heading = "Remove " + stagedLink.link.name + " bookmark";
@@ -539,10 +538,10 @@ var link = (function() {
         linkPanelFront.appendChild(linkName);
         linkPanelFront.appendChild(linkDisplay);
       };
-      linkHandle.appendChild(linkHandleIcon);
-      linkControl.appendChild(linkHandle);
       linkLeft.appendChild(linkLeftIcon);
       linkControl.appendChild(linkLeft);
+      linkHandle.appendChild(linkHandleIcon);
+      linkControl.appendChild(linkHandle);
       linkRight.appendChild(linkRightIcon);
       linkControl.appendChild(linkRight);
       linkEdit.appendChild(linkEditIcon);
