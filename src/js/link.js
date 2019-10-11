@@ -496,11 +496,19 @@ var link = (function() {
       var linkDisplayLetter = null;
       var linkDisplayIcon = null;
       if (stagedLink.link.display == "letter") {
-        linkDisplayLetter = helper.node("p:" + stagedLink.link.letter + "|class:link-display-letter");
+        var letterText = stagedLink.link.letter;
+        if (letterText == null) {
+          letterText = "";
+        };
+        linkDisplayLetter = helper.node("p:" + letterText + "|class:link-display-letter");
       } else if (stagedLink.link.display == "icon" && stagedLink.link.icon.prefix != null && stagedLink.link.icon.name != null) {
         linkDisplayIcon = helper.node("div|class:link-display-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name);
       };
-      var linkName = helper.node("p:" + stagedLink.link.name + "|class:link-name");
+      var nameText = stagedLink.link.name;
+      if (nameText == null) {
+        nameText = "";
+      };
+      var linkName = helper.node("p:" + nameText + "|class:link-name");
       var linkUrl = helper.node("div|class:link-url");
       var url = "";
       if (stagedLink.link.url != null) {
