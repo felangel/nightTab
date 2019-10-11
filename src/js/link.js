@@ -294,6 +294,35 @@ var link = (function() {
     pagelock.lock();
   };
 
+  render.move = {
+    link: function() {
+      bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
+      data.save();
+      render.clear();
+      render.item.all();
+      render.item.tabindex();
+      render.previousFocus();
+      bind.sort.group();
+      bind.sort.item();
+      stagedLink.reset();
+    },
+    left: function(copyStagedLink) {
+      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
+      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
+      stagedLink.position.destination.item = stagedLink.position.destination.item - 1;
+      if (stagedLink.position.destination.item < 0) {
+        stagedLink.position.destination.item = 0;
+      };
+      render.move.link();
+    },
+    right: function(copyStagedLink) {
+      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
+      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
+      stagedLink.position.destination.item = stagedLink.position.destination.item + 1;
+      render.move.link();
+    }
+  };
+
   render.clear = function() {
     var link = helper.e(".link");
     while (link.lastChild) {
@@ -319,9 +348,9 @@ var link = (function() {
     var groupRemove = helper.node("button|class:button button-small group-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
     var groupRemoveIcon = helper.node("span|class:button-icon icon-close");
     var groupDown = helper.node("button|class:button button-small group-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
-    var groupDownIcon = helper.node("span|class:button-icon icon-arrow-downward");
+    var groupDownIcon = helper.node("span|class:button-icon icon-arrow-down");
     var groupUp = helper.node("button|class:button button-small group-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
-    var groupUpIcon = helper.node("span|class:button-icon icon-arrow-upward");
+    var groupUpIcon = helper.node("span|class:button-icon icon-arrow-up");
     groupHandle.appendChild(groupHandleIcon);
     groupControl.appendChild(groupHandle);
     groupDown.appendChild(groupDownIcon);
@@ -349,12 +378,14 @@ var link = (function() {
       var action = {
         bookmarks: function(data) {
           data.forEach(function(arrayItem, index) {
+            stagedLink.position.origin.group = index;
             stagedLink.position.destination.group = index;
             linkArea = render.areaName(arrayItem);
             linkArea.position = JSON.parse(JSON.stringify(stagedLink.position));
             var linkAreaList = helper.node("div|class:link-area-list");
             arrayItem.items.forEach(function(arrayItem, index) {
               stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
+              stagedLink.position.origin.item = index;
               stagedLink.position.destination.item = index;
               var linkItem = render.item.link();
               linkItem.position = JSON.parse(JSON.stringify(stagedLink.position));
@@ -460,137 +491,34 @@ var link = (function() {
         });
       };
       var linkPanelFront = helper.makeNode(linkPanelFrontOptions);
-      var linkPanelBack = helper.makeNode({
-        tag: "div",
-        attr: [{
-          key: "class",
-          value: "link-panel-back"
-        }]
-      });
-      var linkDisplay = helper.makeNode({
-        tag: "div",
-        attr: [{
-          key: "class",
-          value: "link-display"
-        }]
-      });
+      var linkPanelBack = helper.node("div|class:link-panel-back");
+      var linkDisplay = helper.node("div|class:link-display");
       var linkDisplayLetter = null;
       var linkDisplayIcon = null;
       if (stagedLink.link.display == "letter") {
-        linkDisplayLetter = helper.makeNode({
-          tag: "p",
-          text: stagedLink.link.letter,
-          attr: [{
-            key: "class",
-            value: "link-display-letter"
-          }]
-        });
+        linkDisplayLetter = helper.node("p:" + stagedLink.link.letter + "|class:link-display-letter");
       } else if (stagedLink.link.display == "icon" && stagedLink.link.icon.prefix != null && stagedLink.link.icon.name != null) {
-        linkDisplayIcon = helper.makeNode({
-          tag: "div",
-          attr: [{
-            key: "class",
-            value: "link-display-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name
-          }]
-        });
+        linkDisplayIcon = helper.node("div|class:link-display-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name);
       };
-      var linkName = helper.makeNode({
-        tag: "p",
-        text: stagedLink.link.name,
-        attr: [{
-          key: "class",
-          value: "link-name"
-        }]
-      });
-      var linkUrl = helper.makeNode({
-        tag: "div",
-        attr: [{
-          key: "class",
-          value: "link-url"
-        }]
-      });
+      var linkName = helper.node("p:" + stagedLink.link.name + "|class:link-name");
+      var linkUrl = helper.node("div|class:link-url");
       var url = "";
       if (stagedLink.link.url != null) {
         url = stagedLink.link.url.replace(/^https?\:\/\//i, "").replace(/\/$/, "");
       };
-      var linkUrlText = helper.makeNode({
-        tag: "p",
-        text: url,
-        attr: [{
-          key: "class",
-          value: "link-url-text"
-        }, {
-          key: "title",
-          value: url
-        }]
-      });
-      var linkControl = helper.makeNode({
-        tag: "div",
-        attr: [{
-          key: "class",
-          value: "link-control"
-        }]
-      });
-      var linkHandle = helper.makeNode({
-        tag: "div",
-        attr: [{
-          key: "class",
-          value: "button button-small link-control-item link-control-item-handle"
-        }, {
-          key: "tabindex",
-          value: -1
-        }, {
-          key: "title",
-          value: "Drag and drop to reorder"
-        }]
-      });
-      var linkHandleIcon = helper.makeNode({
-        tag: "span",
-        attr: [{
-          key: "class",
-          value: "button-icon icon-reorder"
-        }]
-      });
-      var linkEdit = helper.makeNode({
-        tag: "button",
-        attr: [{
-          key: "class",
-          value: "button button-small link-control-item link-control-item-edit"
-        }, {
-          key: "tabindex",
-          value: -1
-        }, {
-          key: "title",
-          value: "Edit this bookmark"
-        }]
-      });
-      var linkEditIcon = helper.makeNode({
-        tag: "span",
-        attr: [{
-          key: "class",
-          value: "button-icon icon-edit"
-        }]
-      });
-      var linkRemove = helper.makeNode({
-        tag: "button",
-        attr: [{
-          key: "class",
-          value: "button button-small link-control-item link-control-item-remove"
-        }, {
-          key: "tabindex",
-          value: -1
-        }, {
-          key: "title",
-          value: "Remove this bookmark"
-        }]
-      });
-      var linkRemoveIcon = helper.makeNode({
-        tag: "span",
-        attr: [{
-          key: "class",
-          value: "button-icon icon-close"
-        }]
-      });
+      var linkUrlText = helper.node("p:" + url + "|class:link-url-text,title:" + url);
+      var linkControl = helper.node("div|class:link-control");
+      var linkHandle = helper.node("div|class:button button-small link-control-item link-control-item-handle,tabindex:-1,title:Drag and drop to reorder");
+      var linkHandleIcon = helper.node("span|class:button-icon icon-reorder");
+      var linkEdit = helper.node("button|class:button button-small link-control-item link-control-item-edit,tabindex:-1,title:Edit this bookmark");
+      var linkEditIcon = helper.node("span|class:button-icon icon-edit");
+      var linkLeft = helper.node("button|class:button button-small link-control-item link-control-item-left,tabindex:-1,title:Move this bookmark left");
+      var linkLeftIcon = helper.node("span|class:button-icon icon-arrow-left");
+      var linkRight = helper.node("button|class:button button-small link-control-item link-control-item-right,tabindex:-1,title:Move this bookmark right");
+      var linkRightIcon = helper.node("span|class:button-icon icon-arrow-right");
+      var linkRemove = helper.node("button|class:button button-small link-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
+      var linkRemoveIcon = helper.node("span|class:button-icon icon-close");
+
       if (stagedLink.link.display == "letter") {
         linkDisplay.appendChild(linkDisplayLetter);
       } else if (stagedLink.link.display == "icon" && stagedLink.link.icon.prefix != null && stagedLink.link.icon.name != null) {
@@ -605,6 +533,10 @@ var link = (function() {
       };
       linkHandle.appendChild(linkHandleIcon);
       linkControl.appendChild(linkHandle);
+      linkLeft.appendChild(linkLeftIcon);
+      linkControl.appendChild(linkLeft);
+      linkRight.appendChild(linkRightIcon);
+      linkControl.appendChild(linkRight);
       linkEdit.appendChild(linkEditIcon);
       linkControl.appendChild(linkEdit);
       linkRemove.appendChild(linkRemoveIcon);
@@ -615,25 +547,31 @@ var link = (function() {
       linkItem.appendChild(linkPanelFront);
       linkItem.appendChild(linkPanelBack);
 
-      var copyStagedLinkLink = JSON.parse(JSON.stringify(stagedLink.link));
-      var copyStagedLinkPosition = JSON.parse(JSON.stringify(stagedLink.position));
+      var copyStagedLink = JSON.parse(JSON.stringify(stagedLink));
+
+      linkLeft.addEventListener("click", function() {
+        render.move.left(copyStagedLink);
+      }, false);
+
+      linkRight.addEventListener("click", function() {
+        render.move.right(copyStagedLink);
+      }, false);
 
       linkEdit.addEventListener("click", function() {
-        _previousFocus = stagedLink.position;
-        render.item.edit(copyStagedLinkLink, copyStagedLinkPosition);
+        // _previousFocus = stagedLink.position;
+        render.item.edit(copyStagedLink);
       }, false);
 
       linkRemove.addEventListener("click", function() {
-        _previousFocus = stagedLink.position;
-        render.remove(copyStagedLinkLink, copyStagedLinkPosition);
+        // _previousFocus = stagedLink.position;
+        render.remove(copyStagedLink);
       }, false);
 
       return linkItem;
     },
-    edit: function(link, position) {
-      stagedLink.link = link;
-      stagedLink.position = position;
-      stagedLink.position.origin = JSON.parse(JSON.stringify(stagedLink.position.destination));
+    edit: function(copyStagedLink) {
+      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
+      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
       var form = render.form({
         useStagedLink: true
       });
