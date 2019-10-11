@@ -208,7 +208,8 @@ var link = (function() {
     group: function() {
       sortable(".link", {
         items: ".link-area",
-        handle: ".link-area-name",
+        handle: ".group-control-item-handle",
+        orientation: "vertical",
         placeholder: helper.node("div|class:link-placeholder"),
         forcePlaceholderSize: true
       });
@@ -310,6 +311,28 @@ var link = (function() {
   render.areaName = function(data) {
     var linkArea = helper.node("div|class:link-area");
     var name = helper.node("h1:" + data.name + "|class:link-area-name");
+    var groupControl = helper.node("div|class:group-control");
+    var groupHandle = helper.node("div|class:button button-small group-control-item group-control-item-handle,tabindex:-1,title:Drag and drop to reorder");
+    var groupHandleIcon = helper.node("span|class:button-icon icon-reorder");
+    var groupEdit = helper.node("button|class:button button-small group-control-item group-control-item-edit,tabindex:-1,title:Edit this bookmark");
+    var groupEditIcon = helper.node("span|class:button-icon icon-edit");
+    var groupRemove = helper.node("button|class:button button-small group-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
+    var groupRemoveIcon = helper.node("span|class:button-icon icon-close");
+    var groupDown = helper.node("button|class:button button-small group-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
+    var groupDownIcon = helper.node("span|class:button-icon icon-arrow-downward");
+    var groupUp = helper.node("button|class:button button-small group-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
+    var groupUpIcon = helper.node("span|class:button-icon icon-arrow-upward");
+    groupHandle.appendChild(groupHandleIcon);
+    groupControl.appendChild(groupHandle);
+    groupDown.appendChild(groupDownIcon);
+    groupControl.appendChild(groupDown);
+    groupUp.appendChild(groupUpIcon);
+    groupControl.appendChild(groupUp);
+    groupEdit.appendChild(groupEditIcon);
+    groupControl.appendChild(groupEdit);
+    groupRemove.appendChild(groupRemoveIcon);
+    groupControl.appendChild(groupRemove);
+    linkArea.appendChild(groupControl);
     linkArea.appendChild(name);
     return linkArea;
   };

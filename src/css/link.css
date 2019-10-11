@@ -58,37 +58,6 @@
   transform: translate(-50%, -50%);
 }
 
-/* 
-
-.link-area-list:before,
-.link-area-list:after {
-  content: "";
-  position: absolute;
-  border-style: solid;
-  border-color: transparent;
-  height: 2em;
-  width: 2em;
-}
-
-.link-area-list:before {
-  border-top-left-radius: var(--theme-radius);
-  top: 0;
-  left: 0;
-  border-width: var(--layout-line-width) 0 0 var(--layout-line-width);
-}
-
-.link-area-list:after {
-  border-bottom-right-radius: var(--theme-radius);
-  bottom: 0;
-  right: 0;
-  border-width: 0 var(--layout-line-width) var(--layout-line-width) 0;
-}
-
-.link-area-list:empty:before,
-.link-area-list:empty:after {
-  border-style: solid;
-  border-color: rgb(var(--theme-gray-03));
-} */
 .is-layout-order-headerlink .link-area {
   padding-bottom: calc(var(--layout-space) * var(--layout-padding));
 }
