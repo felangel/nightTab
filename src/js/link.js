@@ -875,12 +875,11 @@ var link = (function() {
       } else {
         optionCount = bookmarks.get()[stagedLink.position.destination.group].items.length + 1;
       };
-      if (optionCount > 0) {
-        for (var i = 1; i <= optionCount; i++) {
-          groupExistingPosition.appendChild(helper.node("option:" + helper.ordinalNumber(i)));
-        };
-      } else {
-        groupExistingPosition.appendChild(helper.node("option:1"));
+      for (var i = 1; i <= optionCount; i++) {
+        groupExistingPosition.appendChild(helper.node("option:" + helper.ordinalNumber(i)));
+        if (optionCount == i) {
+          groupExistingPosition.selectedIndex = i - 1;
+        }
       };
     };
 
@@ -948,7 +947,6 @@ var link = (function() {
     groupExistingGroup.addEventListener("change", function(event) {
       stagedLink.position.destination.group = this.selectedIndex;
       makePostionOptions();
-      // groupExistingPosition.selectedIndex = bookmarks.get()[stagedLink.position.destination.group].items.length;
       stagedLink.position.destination.item = groupExistingPosition.selectedIndex;
     }, false);
     groupExistingPosition.addEventListener("change", function(event) {
