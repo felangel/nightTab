@@ -166,28 +166,30 @@ var link = (function() {
           });
           data.save();
           render.clear();
-          render.item.all();
-          render.item.tabindex();
-          render.previousFocus();
+          render.group.all();
+          // render.item.all();
+          // render.item.tabindex();
+          // render.previousFocus();
           bind.sort.group();
           bind.sort.item();
         },
         item: function(event) {
           bookmarks.mod.move.link({
             origin: {
-              group: Array.from(helper.getClosest(event.detail.origin.container, ".link-area").parentNode.children).indexOf(helper.getClosest(event.detail.origin.container, ".link-area")),
+              group: Array.from(helper.getClosest(event.detail.origin.container, ".link-group-body").parentNode.children).indexOf(helper.getClosest(event.detail.origin.container, ".link-group-body")),
               item: event.detail.origin.index
             },
             destination: {
-              group: Array.from(helper.getClosest(event.detail.destination.container, ".link-area").parentNode.children).indexOf(helper.getClosest(event.detail.destination.container, ".link-area")),
+              group: Array.from(helper.getClosest(event.detail.destination.container, ".link-group-body").parentNode.children).indexOf(helper.getClosest(event.detail.destination.container, ".link-group-body")),
               item: event.detail.destination.index
             }
           });
           data.save();
           render.clear();
-          render.item.all();
-          render.item.tabindex();
-          render.previousFocus();
+          render.group.all();
+          // render.item.all();
+          // render.item.tabindex();
+          // render.previousFocus();
           bind.sort.group();
           bind.sort.item();
         }
@@ -199,7 +201,7 @@ var link = (function() {
           });
         },
         item: function() {
-          helper.eA(".link-area-list").forEach(function(arrayItem, index) {
+          helper.eA(".link-group-body").forEach(function(arrayItem, index) {
             sortable(arrayItem)[0].removeEventListener("sortupdate", bind.sort.update.func.item, false);
           });
         }
@@ -207,8 +209,8 @@ var link = (function() {
     },
     group: function() {
       sortable(".link", {
-        items: ".link-area",
-        handle: ".group-control-item-handle",
+        items: ".link-group",
+        handle: ".link-group-control-item-handle",
         orientation: "vertical",
         placeholder: helper.node("div|class:link-placeholder"),
         forcePlaceholderSize: true
@@ -219,16 +221,15 @@ var link = (function() {
       });
     },
     item: function() {
-      sortable(".link-area-list", {
+      sortable(".link-group-body", {
         items: ".link-item",
         handle: ".link-control-item-handle",
-        acceptFrom: '.link-area-list',
-        orientation: "horizontal",
+        acceptFrom: '.link-group-body',
         placeholder: helper.node("div|class:link-placeholder"),
         forcePlaceholderSize: true
       });
       bind.sort.update.remove.item();
-      helper.eA(".link-area-list").forEach(function(arrayItem, index) {
+      helper.eA(".link-group-body").forEach(function(arrayItem, index) {
         sortable(arrayItem)[0].addEventListener("sortupdate", bind.sort.update.func.item, false, event);
       });
     }
@@ -294,31 +295,38 @@ var link = (function() {
   };
 
   render.move = {
-    link: function() {
-      bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
-      data.save();
-      render.clear();
-      render.item.all();
-      render.item.tabindex();
-      render.previousFocus();
-      bind.sort.group();
-      bind.sort.item();
-      stagedLink.reset();
-    },
-    left: function(copyStagedLink) {
-      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
-      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
-      stagedLink.position.destination.item = stagedLink.position.destination.item - 1;
-      if (stagedLink.position.destination.item < 0) {
-        stagedLink.position.destination.item = 0;
-      };
-      render.move.link();
-    },
-    right: function(copyStagedLink) {
-      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
-      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
-      stagedLink.position.destination.item = stagedLink.position.destination.item + 1;
-      render.move.link();
+    link: {
+      left: function(copyStagedLink) {
+        stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
+        stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
+        stagedLink.position.destination.item = stagedLink.position.destination.item - 1;
+        if (stagedLink.position.destination.item < 0) {
+          stagedLink.position.destination.item = 0;
+        };
+        bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
+        data.save();
+        render.clear();
+        render.item.all();
+        render.item.tabindex();
+        render.previousFocus();
+        bind.sort.group();
+        bind.sort.item();
+        stagedLink.reset();
+      },
+      right: function(copyStagedLink) {
+        stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
+        stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
+        stagedLink.position.destination.item = stagedLink.position.destination.item + 1;
+        bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
+        data.save();
+        render.clear();
+        render.item.all();
+        render.item.tabindex();
+        render.previousFocus();
+        bind.sort.group();
+        bind.sort.item();
+        stagedLink.reset();
+      }
     }
   };
 
@@ -336,36 +344,7 @@ var link = (function() {
     }
   };
 
-  render.areaName = function(data) {
-    var linkArea = helper.node("div|class:link-area");
-    var name = helper.node("h1:" + data.name + "|class:link-area-name");
-    var groupControl = helper.node("div|class:group-control");
-    var groupHandle = helper.node("div|class:button button-small group-control-item group-control-item-handle,tabindex:-1,title:Drag and drop to reorder");
-    var groupHandleIcon = helper.node("span|class:button-icon icon-reorder");
-    var groupEdit = helper.node("button|class:button button-small group-control-item group-control-item-edit,tabindex:-1,title:Edit this bookmark");
-    var groupEditIcon = helper.node("span|class:button-icon icon-edit");
-    var groupRemove = helper.node("button|class:button button-small group-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
-    var groupRemoveIcon = helper.node("span|class:button-icon icon-close");
-    var groupDown = helper.node("button|class:button button-small group-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
-    var groupDownIcon = helper.node("span|class:button-icon icon-arrow-down");
-    var groupUp = helper.node("button|class:button button-small group-control-item link-control-item-remove,tabindex:-1,title:Remove this bookmark");
-    var groupUpIcon = helper.node("span|class:button-icon icon-arrow-up");
-    groupHandle.appendChild(groupHandleIcon);
-    groupControl.appendChild(groupHandle);
-    groupDown.appendChild(groupDownIcon);
-    groupControl.appendChild(groupDown);
-    groupUp.appendChild(groupUpIcon);
-    groupControl.appendChild(groupUp);
-    groupEdit.appendChild(groupEditIcon);
-    groupControl.appendChild(groupEdit);
-    groupRemove.appendChild(groupRemoveIcon);
-    groupControl.appendChild(groupRemove);
-    linkArea.appendChild(groupControl);
-    linkArea.appendChild(name);
-    return linkArea;
-  };
-
-  render.item = {
+  render.group = {
     all: function() {
       var linkSection = helper.e(".link");
       var bookmarksToRender = false;
@@ -374,24 +353,19 @@ var link = (function() {
       } else {
         bookmarksToRender = bookmarks.get();
       };
-      var action = {
+      var make = {
         bookmarks: function(data) {
           data.forEach(function(arrayItem, index) {
             stagedLink.position.origin.group = index;
             stagedLink.position.destination.group = index;
-            linkArea = render.areaName(arrayItem);
-            linkArea.position = JSON.parse(JSON.stringify(stagedLink.position));
-            var linkAreaList = helper.node("div|class:link-area-list");
+            linkGroup = render.group.area(arrayItem);
             arrayItem.items.forEach(function(arrayItem, index) {
               stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
               stagedLink.position.origin.item = index;
               stagedLink.position.destination.item = index;
-              var linkItem = render.item.link();
-              linkItem.position = JSON.parse(JSON.stringify(stagedLink.position));
-              linkAreaList.appendChild(linkItem);
+              linkGroup.querySelector(".link-group-body").appendChild(render.item.link());
             });
-            linkArea.appendChild(linkAreaList);
-            linkSection.appendChild(linkArea);
+            linkSection.appendChild(linkGroup);
             stagedLink.reset();
           });
         },
@@ -410,40 +384,78 @@ var link = (function() {
         if (bookmarksToRender.total > 0) {
           // if matching bookmarks found
           if (bookmarksToRender.matching.length > 0) {
-            action.bookmarks(bookmarksToRender.matching);
+            make.bookmarks(bookmarksToRender.matching);
           } else {
-            action.empty.search();
+            make.empty.search();
           };
         } else {
-          action.empty.bookmarks();
+          make.empty.bookmarks();
         };
       } else {
         // if bookmarks exist
         if (bookmarksToRender.length > 0) {
-          action.bookmarks(bookmarksToRender);
+          make.bookmarks(bookmarksToRender);
         } else {
-          action.empty.bookmarks();
+          make.empty.bookmarks();
         };
       };
     },
-    display: {
-      letter: function() {
-        var html = helper.e("html");
-        html.style.setProperty("--link-item-display-letter-size", state.get().link.item.display.letter.size + "em");
-      },
-      icon: function() {
-        var html = helper.e("html");
-        html.style.setProperty("--link-item-display-icon-size", state.get().link.item.display.icon.size + "em");
-      }
+    area: function(data) {
+      var linkGroup = helper.node("div|class:link-group");
+      var linkGroupHeader = helper.node("div|class:link-group-header");
+      var linkGroupName = helper.node("div|class:link-group-name");
+      var linkGroupNameText = helper.node("h1:" + data.name + "|class:link-group-name-text");
+      var linkGroupBody = helper.node("div|class:link-group-body");
+      linkGroup.appendChild(linkGroupHeader);
+      linkGroup.appendChild(linkGroupBody);
+      linkGroupName.appendChild(linkGroupNameText);
+      linkGroupHeader.appendChild(linkGroupName);
+
+      var linkGroupControl = helper.node("div|class:link-group-control form-group");
+      linkGroupHeader.appendChild(linkGroupControl);
+
+      var itemGroupControlItemDown = helper.node("button|class:button button-small link-group-control-item link-group-control-item-up,tabindex:-1,title:Move this bookmark down");
+      var itemGroupControlItemDownIcon = helper.node("span|class:button-icon icon-arrow-up");
+      itemGroupControlItemDown.appendChild(itemGroupControlItemDownIcon);
+      linkGroupControl.appendChild(itemGroupControlItemDown);
+
+      var itemGroupControlItemHandle = helper.node("div|class:button button-small link-group-control-item link-group-control-item-handle,tabindex:-1,title:Drag and drop to reorder");
+      var itemGroupControlItemHandleIcon = helper.node("span|class:button-icon icon-reorder");
+      itemGroupControlItemHandle.appendChild(itemGroupControlItemHandleIcon);
+      linkGroupControl.appendChild(itemGroupControlItemHandle);
+
+      var itemGroupControlItemUp = helper.node("button|class:button button-small link-group-control-item link-group-control-item-down,tabindex:-1,title:Move this bookmark up");
+      var itemGroupControlItemUpIcon = helper.node("span|class:button-icon icon-arrow-down");
+      itemGroupControlItemUp.appendChild(itemGroupControlItemUpIcon);
+      linkGroupControl.appendChild(itemGroupControlItemUp);
+
+      var itemGroupControlItemEdit = helper.node("button|class:button button-small link-group-control-item link-group-control-item-edit,tabindex:-1,title:Edit this bookmark");
+      var itemGroupControlItemEditIcon = helper.node("span|class:button-icon icon-edit");
+      itemGroupControlItemEdit.appendChild(itemGroupControlItemEditIcon);
+      linkGroupControl.appendChild(itemGroupControlItemEdit);
+
+      var itemGroupControlItemRemove = helper.node("button|class:button button-small link-group-control-item link-group-control-item-remove,tabindex:-1,title:Remove this bookmark");
+      var itemGroupControlItemRemoveIcon = helper.node("span|class:button-icon icon-close");
+      itemGroupControlItemRemove.appendChild(itemGroupControlItemRemoveIcon);
+      linkGroupControl.appendChild(itemGroupControlItemRemove);
+
+      return linkGroup;
     },
-    name: function() {
-      var html = helper.e("html");
-      html.style.setProperty("--link-item-name-size", state.get().link.item.name.size + "em");
-    },
-    size: function() {
-      var html = helper.e("html");
-      html.style.setProperty("--link-item-size", state.get().link.item.size + "em");
-    },
+    form: function(override) {
+      var options = {
+        useStagedGroup: null
+      };
+      if (override) {
+        options = helper.applyOptions(options, override);
+      };
+      var form = helper.node("form|class:group-form");
+      var fieldset = helper.node("fieldset");
+
+      return form;
+    }
+  };
+
+  render.item = {
     link: function() {
       var linkItemOptions = {
         tag: "div",
@@ -557,11 +569,11 @@ var link = (function() {
       var copyStagedLink = JSON.parse(JSON.stringify(stagedLink));
 
       linkLeft.addEventListener("click", function() {
-        render.move.left(copyStagedLink);
+        render.move.link.left(copyStagedLink);
       }, false);
 
       linkRight.addEventListener("click", function() {
-        render.move.right(copyStagedLink);
+        render.move.link.right(copyStagedLink);
       }, false);
 
       linkEdit.addEventListener("click", function() {
@@ -576,10 +588,61 @@ var link = (function() {
 
       return linkItem;
     },
+    all: function(linkGroup) {
+      var linkSection = helper.e(".link");
+      var bookmarksToRender = false;
+      if (state.get().search) {
+        bookmarksToRender = search.get();
+      } else {
+        bookmarksToRender = bookmarks.get();
+      };
+      var action = {
+        bookmarks: function(data) {
+          data.forEach(function(arrayItem, index) {
+            arrayItem.items.forEach(function(arrayItem, index) {
+              stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
+              stagedLink.position.origin.item = index;
+              stagedLink.position.destination.item = index;
+              var linkItem = render.item.link();
+              linkGroup.querySelector(".link-group-body").appendChild(linkItem);
+            });
+          });
+        },
+        empty: {
+          search: function() {
+            linkSection.appendChild(render.empty.search());
+          },
+          bookmarks: function() {
+            linkSection.appendChild(render.empty.bookmarks());
+          }
+        }
+      };
+      // if searching
+      if (state.get().search) {
+        // if bookmarks exist to be searched
+        if (bookmarksToRender.total > 0) {
+          // if matching bookmarks found
+          if (bookmarksToRender.matching.length > 0) {
+            action.bookmarks(bookmarksToRender.matching);
+          } else {
+            action.empty.search();
+          };
+        } else {
+          action.empty.bookmarks();
+        };
+      } else {
+        // if bookmarks exist
+        if (bookmarksToRender.length > 0) {
+          action.bookmarks(bookmarksToRender);
+        } else {
+          action.empty.bookmarks();
+        };
+      };
+    },
     edit: function(copyStagedLink) {
       stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
       stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
-      var form = render.form({
+      var form = render.item.form({
         useStagedLink: true
       });
       var heading;
@@ -632,6 +695,24 @@ var link = (function() {
         }
       });
     },
+    display: {
+      letter: function() {
+        var html = helper.e("html");
+        html.style.setProperty("--link-item-display-letter-size", state.get().link.item.display.letter.size + "em");
+      },
+      icon: function() {
+        var html = helper.e("html");
+        html.style.setProperty("--link-item-display-icon-size", state.get().link.item.display.icon.size + "em");
+      }
+    },
+    name: function() {
+      var html = helper.e("html");
+      html.style.setProperty("--link-item-name-size", state.get().link.item.name.size + "em");
+    },
+    size: function() {
+      var html = helper.e("html");
+      html.style.setProperty("--link-item-size", state.get().link.item.size + "em");
+    },
     tabindex: function() {
       var allLinkControlItem = helper.eA(".link-control-item");
       if (state.get().link.edit) {
@@ -647,6 +728,325 @@ var link = (function() {
     border: function() {
       var html = helper.e("html");
       html.style.setProperty("--link-item-border", state.get().link.item.border);
+    },
+    form: function(override) {
+      var options = {
+        useStagedLink: null
+      };
+      if (override) {
+        options = helper.applyOptions(options, override);
+      };
+      var form = helper.node("form|class:link-form");
+      var fieldset = helper.node("fieldset");
+
+      // group existing
+      var groupExistingRadioWrap = helper.node("div|class:input-wrap");
+      var groupExistingRadio = helper.node("input|class:link-form-input-group-existing,id:link-form-input-group-existing,type:radio,name:link-form-input-group,tabindex:1,checked,value:existing");
+      var groupExistingLable = helper.node("label:Existing group|for:link-form-input-group-existing");
+      var groupExistingFormIndent = helper.node("div|class:form-indent");
+      var groupExistingGroupInputWrap = helper.node("div|class:input-wrap");
+      var groupExistingGroup = helper.node("select|id:link-form-select-group,class:link-form-select-group mb-0,tabindex:1");
+      var groupExistingPositionLabel = helper.node("label:Position|for:link-form-position");
+      var groupExistingPositionInputWrap = helper.node("div|class:input-wrap");
+      var groupExistingPosition = helper.node("select|id:link-form-position,class:link-form-position mb-0,tabindex:1");
+
+      // group new
+      var groupNewRadioWrap = helper.node("div|class:input-wrap");
+      var groupNewRadio = helper.node("input|class:link-form-input-group-new,id:link-form-input-group-new,type:radio,name:link-form-input-group,tabindex:1,value:new");
+      var groupNewLable = helper.node("label:New group|for:link-form-input-group-new");
+      var groupNewFormIndent = helper.node("div|class:form-indent");
+      var groupNewInputWrap = helper.node("div|class:input-wrap");
+      var groupNewInput = helper.node("input|type:text,class:link-form-input-new-group mb-0,id:link-form-input-new-group,placeholder:Example group,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false,disabled");
+
+      // letter
+      var displayLetterRadioWrap = helper.node("div|class:input-wrap");
+      var displayLetterRadio = helper.node("input|class:link-form-input-display-letter,id:link-form-input-display-letter,type:radio,name:link-form-input-display,tabindex:1,checked,value:letter");
+      var displayLetterLable = helper.node("label:Letters|for:link-form-input-display-letter");
+      var displayLetterFormIndent = helper.node("div|class:form-indent");
+      var displayLetterInputWrap = helper.node("div|class:input-wrap");
+      var displayLetterInput = helper.node("input|type:text,class:link-form-input-letter mb-0,id:link-form-input-letter,placeholder:E,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false");
+
+      // icon
+      var displayIconRadiotWrap = helper.node("div|class:input-wrap");
+      var displayIconRadio = helper.node("input|class:link-form-input-display-icon,id:link-form-input-display-icon,type:radio,name:link-form-input-display,tabindex:1,value:icon");
+      var displayIconLable = helper.node("label:Icon|for:link-form-input-display-icon");
+      var displayIconFormIndent = helper.node("div|class:form-indent");
+      var displayIconInputWrap = helper.node("div|class:input-wrap");
+      var displayIconFormGroup = helper.node("div|class:form-group mb-0 auto-suggest-wrapper");
+      var displayIconInput = helper.node("input|type:text,class:form-group-item-grow link-form-input-icon auto-suggest-input,id:link-form-input-icon,placeholder:Search for Brands or Icons,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false,disabled");
+      var displayIconFormGroupText = helper.node("div|class:form-group-text link-form-text-icon disabled,tabindex:-1");
+      var displayIconFormGroupClear = helper.node("button|class:link-form-icon-clear button mb-0,type:button,tabindex:1,disabled");
+      var displayIconFormGroupClearIcon = helper.node("span|class:icon-close");
+      var displayIconHelper = helper.node("p:Refer to the \"Free\" and \"Brand\" icons from FontAwesome for full set of icons supported.|class:link-form-input-icon-helper form-helper small muted disabled");
+
+      // name
+      var nameInputWrap = helper.node("div|class:input-wrap");
+      var nameLabel = helper.node("label:Name|for:link-form-input-name");
+      var nameInput = helper.node("input|type:text,class:link-form-input-name mb-0,id:link-form-input-name,placeholder:Example,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false");
+
+      // url
+      var urlInputWrap = helper.node("div|class:input-wrap");
+      var urlLabel = helper.node("label:URL|for:link-form-input-url");
+      var urlInput = helper.node("input|type:text,class:link-form-input-url mb-0,id:link-form-input-url,placeholder:https://www.example.com/,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false");
+      var urlInputHelper = helper.makeNode({
+        tag: "p",
+        text: "Be sure to use the full URL and include \"http://\" or \"https://\".",
+        attr: [{
+          key: "class",
+          value: "form-helper small muted"
+        }]
+      });
+
+      // accent
+      var accentLabel = helper.node("label:Accent colour");
+      var accentGlobalRadioWrap = helper.node("div|class:input-wrap");
+      var accentGlobalRadio = helper.node("input|class:link-form-input-accent-global,id:link-form-input-accent-global,type:radio,name:link-form-input-accent,tabindex:1,checked,value:global");
+      var accentGlobalLabel = helper.node("label:Global|for:link-form-input-accent-global");
+      var accentCustomInputWrap = helper.node("div|class:input-wrap");
+      var accentCustomRadio = helper.node("input|class:link-form-input-accent-custom,id:link-form-input-accent-custom,type:radio,name:link-form-input-accent,tabindex:1,value:custom");
+      var accentCustomLabel = helper.node("label:Custom|for:link-form-input-accent-custom");
+      var accentColorFormIndent = helper.node("div|class:form-indent");
+      var accentColorInputWrap = helper.node("div|class:input-wrap");
+      var accentColorFormGroup = helper.node("div|class:form-group mb-0");
+      var accentColorPicker = helper.node("input|id:link-form-input-accent-picker,class:form-group-item-half link-form-input-accent-picker mb-0,type:color,value:#000000,tabindex:1,disabled");
+      var accentColorHex = helper.node("input|id:link-form-input-accent-hex,class:form-group-item-half link-form-input-accent-hex mb-0,type:text,placeholder:Hex code,value:#000000,tabindex:1,maxlength:7,disabled");
+      var accentColorInputHelper = helper.node("p:Use this colour to override the global Accent colour.|class:link-form-input-accent-helper form-helper small muted disabled");
+
+      groupExistingRadioWrap.appendChild(groupExistingRadio);
+      groupExistingRadioWrap.appendChild(groupExistingLable);
+      groupExistingGroupInputWrap.appendChild(groupExistingGroup);
+      groupExistingPositionInputWrap.appendChild(groupExistingPositionLabel);
+      groupExistingPositionInputWrap.appendChild(groupExistingPosition);
+      groupExistingFormIndent.appendChild(groupExistingGroupInputWrap);
+      groupExistingFormIndent.appendChild(groupExistingPositionInputWrap);
+      fieldset.appendChild(groupExistingRadioWrap);
+      fieldset.appendChild(groupExistingFormIndent);
+
+      groupNewRadioWrap.appendChild(groupNewRadio);
+      groupNewRadioWrap.appendChild(groupNewLable);
+      groupNewInputWrap.appendChild(groupNewInput);
+      groupNewFormIndent.appendChild(groupNewInputWrap);
+      fieldset.appendChild(groupNewRadioWrap);
+      fieldset.appendChild(groupNewFormIndent);
+      fieldset.appendChild(helper.node("hr"));
+
+      displayLetterRadioWrap.appendChild(displayLetterRadio);
+      displayLetterRadioWrap.appendChild(displayLetterLable);
+      fieldset.appendChild(displayLetterRadioWrap);
+      displayLetterInputWrap.appendChild(displayLetterInput);
+      displayLetterFormIndent.appendChild(displayLetterInputWrap);
+      fieldset.appendChild(displayLetterFormIndent);
+      displayIconRadiotWrap.appendChild(displayIconRadio);
+      displayIconRadiotWrap.appendChild(displayIconLable);
+      fieldset.appendChild(displayIconRadiotWrap);
+      displayIconFormGroupClear.appendChild(displayIconFormGroupClearIcon);
+      displayIconFormGroup.appendChild(displayIconInput);
+      displayIconFormGroup.appendChild(displayIconFormGroupText);
+      displayIconFormGroup.appendChild(displayIconFormGroupClear);
+      displayIconInputWrap.appendChild(displayIconFormGroup);
+      displayIconFormIndent.appendChild(displayIconInputWrap);
+      displayIconFormIndent.appendChild(displayIconHelper);
+      fieldset.appendChild(displayIconFormIndent);
+      fieldset.appendChild(helper.node("hr"));
+      nameInputWrap.appendChild(nameLabel);
+      nameInputWrap.appendChild(nameInput);
+      fieldset.appendChild(nameInputWrap);
+      urlInputWrap.appendChild(urlLabel);
+      urlInputWrap.appendChild(urlInput);
+      fieldset.appendChild(urlInputWrap);
+      fieldset.appendChild(urlInputHelper);
+      fieldset.appendChild(helper.node("hr"));
+      fieldset.appendChild(accentLabel);
+      accentGlobalRadioWrap.appendChild(accentGlobalRadio);
+      accentGlobalRadioWrap.appendChild(accentGlobalLabel);
+      fieldset.appendChild(accentGlobalRadioWrap);
+      accentCustomInputWrap.appendChild(accentCustomRadio);
+      accentCustomInputWrap.appendChild(accentCustomLabel);
+      fieldset.appendChild(accentCustomInputWrap);
+      accentColorFormGroup.appendChild(accentColorPicker);
+      accentColorFormGroup.appendChild(accentColorHex);
+      accentColorInputWrap.appendChild(accentColorFormGroup);
+      accentColorFormIndent.appendChild(accentColorInputWrap);
+      accentColorFormIndent.appendChild(accentColorInputHelper);
+      fieldset.appendChild(accentColorFormIndent);
+      form.appendChild(fieldset);
+
+      var makeGroupOptions = function() {
+        bookmarks.get().forEach(function(arrayItem, index) {
+          groupExistingGroup.appendChild(helper.node("option:" + arrayItem.name + "|value:" + arrayItem.name));
+        });
+      };
+
+      var makePostionOptions = function() {
+        while (groupExistingPosition.lastChild) {
+          groupExistingPosition.removeChild(groupExistingPosition.lastChild);
+        };
+        var optionCount;
+        if (options.useStagedLink && stagedLink.position.origin.group == stagedLink.position.destination.group) {
+          optionCount = bookmarks.get()[stagedLink.position.origin.group].items.length;
+        } else {
+          optionCount = bookmarks.get()[stagedLink.position.destination.group].items.length + 1;
+        };
+        for (var i = 1; i <= optionCount; i++) {
+          groupExistingPosition.appendChild(helper.node("option:" + helper.ordinalNumber(i)));
+          if (optionCount == i) {
+            groupExistingPosition.selectedIndex = i - 1;
+          }
+        };
+      };
+
+      var populateForm = function() {
+        groupExistingGroup.selectedIndex = stagedLink.position.origin.group;
+        groupExistingPosition.selectedIndex = stagedLink.position.origin.item;
+        if (stagedLink.link.display == "letter") {
+          displayLetterInput.removeAttribute("disabled");
+          displayIconInput.setAttribute("disabled", "");
+          helper.addClass(displayIconFormGroupText, "disabled");
+          displayIconInput.setAttribute("disabled", "");
+          helper.addClass(displayIconHelper, "disabled");
+          displayIconFormGroupClear.setAttribute("disabled", "");
+          displayIconFormGroupText.tabIndex = -1;
+        } else if (stagedLink.link.display == "icon") {
+          displayLetterInput.setAttribute("disabled", "");
+          displayIconInput.removeAttribute("disabled");
+          helper.removeClass(displayIconFormGroupText, "disabled");
+          displayIconInput.removeAttribute("disabled");
+          helper.removeClass(displayIconHelper, "disabled");
+          displayIconFormGroupClear.removeAttribute("disabled");
+          displayIconRadio.checked = true;
+          displayIconFormGroupText.tabIndex = 1;
+        };
+        if (stagedLink.link.icon.name != null && stagedLink.link.icon.prefix != null && stagedLink.link.icon.label != null) {
+          displayIconFormGroupText.appendChild(helper.node("span|class:link-form-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name));
+        };
+        displayLetterInput.value = stagedLink.link.letter;
+        displayIconInput.value = stagedLink.link.icon.label;
+        nameInput.value = stagedLink.link.name;
+        urlLabel.value = stagedLink.link.url;
+        if (stagedLink.link.accent.override) {
+          accentGlobalRadio.checked = false;
+          accentCustomRadio.checked = true;
+          accentColorPicker.removeAttribute("disabled");
+          accentColorHex.removeAttribute("disabled");
+          helper.removeClass(form.querySelector(".link-form-input-accent-helper"), "disabled");
+        } else {
+          accentGlobalRadio.checked = true;
+          accentCustomRadio.checked = false;
+          accentColorPicker.setAttribute("disabled", "");
+          accentColorHex.setAttribute("disabled", "");
+          helper.addClass(form.querySelector(".link-form-input-accent-helper"), "disabled");
+        };
+        if (stagedLink.link.accent.color.r != null && stagedLink.link.accent.color.g != null && stagedLink.link.accent.color.b != null) {
+          accentColorPicker.value = helper.rgbToHex(stagedLink.link.accent.color);
+          accentColorHex.value = helper.rgbToHex(stagedLink.link.accent.color);
+        };
+      };
+
+      makeGroupOptions();
+      makePostionOptions();
+      if (options.useStagedLink) {
+        populateForm();
+      };
+
+      groupExistingRadio.addEventListener("change", function(event) {
+        stagedLink.position.destination.group = groupExistingGroup.selectedIndex;
+        stagedLink.position.group.new = false;
+        groupExistingGroup.removeAttribute("disabled");
+        groupExistingPosition.removeAttribute("disabled");
+        helper.removeClass(groupExistingPositionLabel, "disabled");
+        groupNewInput.setAttribute("disabled", "");
+      }, false);
+      groupExistingGroup.addEventListener("change", function(event) {
+        stagedLink.position.destination.group = this.selectedIndex;
+        makePostionOptions();
+        stagedLink.position.destination.item = groupExistingPosition.selectedIndex;
+      }, false);
+      groupExistingPosition.addEventListener("change", function(event) {
+        stagedLink.position.destination.item = this.selectedIndex;
+      }, false);
+      groupNewRadio.addEventListener("change", function(event) {
+        stagedLink.position.destination.group = bookmarks.get().length;
+        stagedLink.position.group.new = true;
+        groupExistingGroup.setAttribute("disabled", "");
+        groupExistingPosition.setAttribute("disabled", "");
+        helper.addClass(groupExistingPositionLabel, "disabled");
+        groupNewInput.removeAttribute("disabled");
+      }, false);
+      groupNewInput.addEventListener("input", function(event) {
+        stagedLink.position.group.name = this.value;
+      }, false);
+      displayLetterRadio.addEventListener("change", function(event) {
+        stagedLink.link.display = this.value;
+      }, false);
+      displayIconRadio.addEventListener("change", function(event) {
+        stagedLink.link.display = this.value;
+      }, false);
+      displayLetterInput.addEventListener("input", function(event) {
+        stagedLink.link.letter = this.value;
+      }, false);
+      nameInput.addEventListener("input", function(event) {
+        stagedLink.link.name = this.value;
+      }, false);
+      urlInput.addEventListener("input", function(event) {
+        stagedLink.link.url = this.value;
+      }, false);
+      accentGlobalRadio.addEventListener("change", function() {
+        stagedLink.link.accent.override = false;
+        accentColorPicker.setAttribute("disabled", "");
+        accentColorHex.setAttribute("disabled", "");
+        helper.addClass(accentColorInputHelper, "disabled");
+      }, false);
+      accentCustomRadio.addEventListener("change", function() {
+        stagedLink.link.accent.override = true;
+        stagedLink.link.accent.color = helper.hexToRgb(accentColorPicker.value);
+        accentColorPicker.removeAttribute("disabled");
+        accentColorHex.removeAttribute("disabled");
+        helper.removeClass(accentColorInputHelper, "disabled");
+      }, false);
+      accentColorPicker.addEventListener("change", function() {
+        if (helper.isHexNumber(this.value)) {
+          stagedLink.link.accent.color = helper.hexToRgb(this.value);
+          accentColorHex.value = this.value;
+        };
+      }, false);
+      accentColorHex.addEventListener("input", function() {
+        if (helper.isHexNumber(this.value)) {
+          stagedLink.link.accent.color = helper.hexToRgb(this.value);
+          accentColorPicker.value = this.value;
+        };
+      }, false);
+      displayIconFormGroupClear.addEventListener("click", function(event) {
+        stagedLink.link.icon.name = null;
+        stagedLink.link.icon.prefix = null;
+        stagedLink.link.icon.label = null;
+        var existingIcon = helper.e(".link-form-icon");
+        if (existingIcon) {
+          existingIcon.remove();
+        };
+        displayIconInput.value = "";
+      }, false);
+      displayLetterRadio.addEventListener("change", function(event) {
+        displayLetterInput.removeAttribute("disabled");
+        displayIconInput.setAttribute("disabled", "");
+        helper.addClass(displayIconFormGroupText, "disabled");
+        helper.addClass(displayIconHelper, "disabled");
+        displayIconFormGroupClear.setAttribute("disabled", "");
+        displayIconFormGroupText.tabIndex = -1;
+      }, false);
+      displayIconRadio.addEventListener("change", function(event) {
+        displayLetterInput.setAttribute("disabled", "");
+        displayIconInput.removeAttribute("disabled");
+        helper.removeClass(displayIconFormGroupText, "disabled");
+        helper.removeClass(displayIconHelper, "disabled");
+        displayIconFormGroupClear.removeAttribute("disabled");
+        displayIconFormGroupText.tabIndex = 1;
+      }, false);
+      autoSuggest.bind.input({
+        input: displayIconInput,
+        type: "fontawesomeIcon",
+        postFocus: displayIconFormGroupText
+      });
+      return form;
     }
   };
 
@@ -683,326 +1083,6 @@ var link = (function() {
       };
       _previousFocus = null;
     };
-  };
-
-  render.form = function(override) {
-    var options = {
-      useStagedLink: null
-    };
-    if (override) {
-      options = helper.applyOptions(options, override);
-    };
-    var form = helper.node("form|class:link-form");
-    var fieldset = helper.node("fieldset");
-
-    // group existing
-    var groupExistingRadioWrap = helper.node("div|class:input-wrap");
-    var groupExistingRadio = helper.node("input|class:link-form-input-group-existing,id:link-form-input-group-existing,type:radio,name:link-form-input-group,tabindex:1,checked,value:existing");
-    var groupExistingLable = helper.node("label:Existing group|for:link-form-input-group-existing");
-    var groupExistingFormIndent = helper.node("div|class:form-indent");
-    var groupExistingGroupInputWrap = helper.node("div|class:input-wrap");
-    var groupExistingGroup = helper.node("select|id:link-form-select-group,class:link-form-select-group mb-0,tabindex:1");
-    var groupExistingPositionLabel = helper.node("label:Position|for:link-form-position");
-    var groupExistingPositionInputWrap = helper.node("div|class:input-wrap");
-    var groupExistingPosition = helper.node("select|id:link-form-position,class:link-form-position mb-0,tabindex:1");
-
-    // group new
-    var groupNewRadioWrap = helper.node("div|class:input-wrap");
-    var groupNewRadio = helper.node("input|class:link-form-input-group-new,id:link-form-input-group-new,type:radio,name:link-form-input-group,tabindex:1,value:new");
-    var groupNewLable = helper.node("label:New group|for:link-form-input-group-new");
-    var groupNewFormIndent = helper.node("div|class:form-indent");
-    var groupNewInputWrap = helper.node("div|class:input-wrap");
-    var groupNewInput = helper.node("input|type:text,class:link-form-input-new-group mb-0,id:link-form-input-new-group,placeholder:Example group,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false,disabled");
-
-    // letter
-    var displayLetterRadioWrap = helper.node("div|class:input-wrap");
-    var displayLetterRadio = helper.node("input|class:link-form-input-display-letter,id:link-form-input-display-letter,type:radio,name:link-form-input-display,tabindex:1,checked,value:letter");
-    var displayLetterLable = helper.node("label:Letters|for:link-form-input-display-letter");
-    var displayLetterFormIndent = helper.node("div|class:form-indent");
-    var displayLetterInputWrap = helper.node("div|class:input-wrap");
-    var displayLetterInput = helper.node("input|type:text,class:link-form-input-letter mb-0,id:link-form-input-letter,placeholder:E,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false");
-
-    // icon
-    var displayIconRadiotWrap = helper.node("div|class:input-wrap");
-    var displayIconRadio = helper.node("input|class:link-form-input-display-icon,id:link-form-input-display-icon,type:radio,name:link-form-input-display,tabindex:1,value:icon");
-    var displayIconLable = helper.node("label:Icon|for:link-form-input-display-icon");
-    var displayIconFormIndent = helper.node("div|class:form-indent");
-    var displayIconInputWrap = helper.node("div|class:input-wrap");
-    var displayIconFormGroup = helper.node("div|class:form-group mb-0 auto-suggest-wrapper");
-    var displayIconInput = helper.node("input|type:text,class:form-group-item-grow link-form-input-icon auto-suggest-input,id:link-form-input-icon,placeholder:Search for Brands or Icons,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false,disabled");
-    var displayIconFormGroupText = helper.node("div|class:form-group-text link-form-text-icon disabled,tabindex:-1");
-    var displayIconFormGroupClear = helper.node("button|class:link-form-icon-clear button mb-0,type:button,tabindex:1,disabled");
-    var displayIconFormGroupClearIcon = helper.node("span|class:icon-close");
-    var displayIconHelper = helper.node("p:Refer to the \"Free\" and \"Brand\" icons from FontAwesome for full set of icons supported.|class:link-form-input-icon-helper form-helper small muted disabled");
-
-    // name
-    var nameInputWrap = helper.node("div|class:input-wrap");
-    var nameLabel = helper.node("label:Name|for:link-form-input-name");
-    var nameInput = helper.node("input|type:text,class:link-form-input-name mb-0,id:link-form-input-name,placeholder:Example,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false");
-
-    // url
-    var urlInputWrap = helper.node("div|class:input-wrap");
-    var urlLabel = helper.node("label:URL|for:link-form-input-url");
-    var urlInput = helper.node("input|type:text,class:link-form-input-url mb-0,id:link-form-input-url,placeholder:https://www.example.com/,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false");
-    var urlInputHelper = helper.makeNode({
-      tag: "p",
-      text: "Be sure to use the full URL and include \"http://\" or \"https://\".",
-      attr: [{
-        key: "class",
-        value: "form-helper small muted"
-      }]
-    });
-
-    // accent
-    var accentLabel = helper.node("label:Accent colour");
-    var accentGlobalRadioWrap = helper.node("div|class:input-wrap");
-    var accentGlobalRadio = helper.node("input|class:link-form-input-accent-global,id:link-form-input-accent-global,type:radio,name:link-form-input-accent,tabindex:1,checked,value:global");
-    var accentGlobalLabel = helper.node("label:Global|for:link-form-input-accent-global");
-    var accentCustomInputWrap = helper.node("div|class:input-wrap");
-    var accentCustomRadio = helper.node("input|class:link-form-input-accent-custom,id:link-form-input-accent-custom,type:radio,name:link-form-input-accent,tabindex:1,value:custom");
-    var accentCustomLabel = helper.node("label:Custom|for:link-form-input-accent-custom");
-    var accentColorFormIndent = helper.node("div|class:form-indent");
-    var accentColorInputWrap = helper.node("div|class:input-wrap");
-    var accentColorFormGroup = helper.node("div|class:form-group mb-0");
-    var accentColorPicker = helper.node("input|id:link-form-input-accent-picker,class:form-group-item-half link-form-input-accent-picker mb-0,type:color,value:#000000,tabindex:1,disabled");
-    var accentColorHex = helper.node("input|id:link-form-input-accent-hex,class:form-group-item-half link-form-input-accent-hex mb-0,type:text,placeholder:Hex code,value:#000000,tabindex:1,maxlength:7,disabled");
-    var accentColorInputHelper = helper.node("p:Use this colour to override the global Accent colour.|class:link-form-input-accent-helper form-helper small muted disabled");
-
-    groupExistingRadioWrap.appendChild(groupExistingRadio);
-    groupExistingRadioWrap.appendChild(groupExistingLable);
-    groupExistingGroupInputWrap.appendChild(groupExistingGroup);
-    groupExistingPositionInputWrap.appendChild(groupExistingPositionLabel);
-    groupExistingPositionInputWrap.appendChild(groupExistingPosition);
-    groupExistingFormIndent.appendChild(groupExistingGroupInputWrap);
-    groupExistingFormIndent.appendChild(groupExistingPositionInputWrap);
-    fieldset.appendChild(groupExistingRadioWrap);
-    fieldset.appendChild(groupExistingFormIndent);
-
-    groupNewRadioWrap.appendChild(groupNewRadio);
-    groupNewRadioWrap.appendChild(groupNewLable);
-    groupNewInputWrap.appendChild(groupNewInput);
-    groupNewFormIndent.appendChild(groupNewInputWrap);
-    fieldset.appendChild(groupNewRadioWrap);
-    fieldset.appendChild(groupNewFormIndent);
-    fieldset.appendChild(helper.node("hr"));
-
-    displayLetterRadioWrap.appendChild(displayLetterRadio);
-    displayLetterRadioWrap.appendChild(displayLetterLable);
-    fieldset.appendChild(displayLetterRadioWrap);
-    displayLetterInputWrap.appendChild(displayLetterInput);
-    displayLetterFormIndent.appendChild(displayLetterInputWrap);
-    fieldset.appendChild(displayLetterFormIndent);
-    displayIconRadiotWrap.appendChild(displayIconRadio);
-    displayIconRadiotWrap.appendChild(displayIconLable);
-    fieldset.appendChild(displayIconRadiotWrap);
-    displayIconFormGroupClear.appendChild(displayIconFormGroupClearIcon);
-    displayIconFormGroup.appendChild(displayIconInput);
-    displayIconFormGroup.appendChild(displayIconFormGroupText);
-    displayIconFormGroup.appendChild(displayIconFormGroupClear);
-    displayIconInputWrap.appendChild(displayIconFormGroup);
-    displayIconFormIndent.appendChild(displayIconInputWrap);
-    displayIconFormIndent.appendChild(displayIconHelper);
-    fieldset.appendChild(displayIconFormIndent);
-    fieldset.appendChild(helper.node("hr"));
-    nameInputWrap.appendChild(nameLabel);
-    nameInputWrap.appendChild(nameInput);
-    fieldset.appendChild(nameInputWrap);
-    urlInputWrap.appendChild(urlLabel);
-    urlInputWrap.appendChild(urlInput);
-    fieldset.appendChild(urlInputWrap);
-    fieldset.appendChild(urlInputHelper);
-    fieldset.appendChild(helper.node("hr"));
-    fieldset.appendChild(accentLabel);
-    accentGlobalRadioWrap.appendChild(accentGlobalRadio);
-    accentGlobalRadioWrap.appendChild(accentGlobalLabel);
-    fieldset.appendChild(accentGlobalRadioWrap);
-    accentCustomInputWrap.appendChild(accentCustomRadio);
-    accentCustomInputWrap.appendChild(accentCustomLabel);
-    fieldset.appendChild(accentCustomInputWrap);
-    accentColorFormGroup.appendChild(accentColorPicker);
-    accentColorFormGroup.appendChild(accentColorHex);
-    accentColorInputWrap.appendChild(accentColorFormGroup);
-    accentColorFormIndent.appendChild(accentColorInputWrap);
-    accentColorFormIndent.appendChild(accentColorInputHelper);
-    fieldset.appendChild(accentColorFormIndent);
-    form.appendChild(fieldset);
-
-    var makeGroupOptions = function() {
-      bookmarks.get().forEach(function(arrayItem, index) {
-        groupExistingGroup.appendChild(helper.node("option:" + arrayItem.name + "|value:" + arrayItem.name));
-      });
-    };
-
-    var makePostionOptions = function() {
-      while (groupExistingPosition.lastChild) {
-        groupExistingPosition.removeChild(groupExistingPosition.lastChild);
-      };
-      var optionCount;
-      if (options.useStagedLink && stagedLink.position.origin.group == stagedLink.position.destination.group) {
-        optionCount = bookmarks.get()[stagedLink.position.origin.group].items.length;
-      } else {
-        optionCount = bookmarks.get()[stagedLink.position.destination.group].items.length + 1;
-      };
-      for (var i = 1; i <= optionCount; i++) {
-        groupExistingPosition.appendChild(helper.node("option:" + helper.ordinalNumber(i)));
-        if (optionCount == i) {
-          groupExistingPosition.selectedIndex = i - 1;
-        }
-      };
-    };
-
-    var populateForm = function() {
-      groupExistingGroup.selectedIndex = stagedLink.position.origin.group;
-      groupExistingPosition.selectedIndex = stagedLink.position.origin.item;
-      if (stagedLink.link.display == "letter") {
-        displayLetterInput.removeAttribute("disabled");
-        displayIconInput.setAttribute("disabled", "");
-        helper.addClass(displayIconFormGroupText, "disabled");
-        displayIconInput.setAttribute("disabled", "");
-        helper.addClass(displayIconHelper, "disabled");
-        displayIconFormGroupClear.setAttribute("disabled", "");
-        displayIconFormGroupText.tabIndex = -1;
-      } else if (stagedLink.link.display == "icon") {
-        displayLetterInput.setAttribute("disabled", "");
-        displayIconInput.removeAttribute("disabled");
-        helper.removeClass(displayIconFormGroupText, "disabled");
-        displayIconInput.removeAttribute("disabled");
-        helper.removeClass(displayIconHelper, "disabled");
-        displayIconFormGroupClear.removeAttribute("disabled");
-        displayIconRadio.checked = true;
-        displayIconFormGroupText.tabIndex = 1;
-      };
-      if (stagedLink.link.icon.name != null && stagedLink.link.icon.prefix != null && stagedLink.link.icon.label != null) {
-        displayIconFormGroupText.appendChild(helper.node("span|class:link-form-icon " + stagedLink.link.icon.prefix + " fa-" + stagedLink.link.icon.name));
-      };
-      displayLetterInput.value = stagedLink.link.letter;
-      displayIconInput.value = stagedLink.link.icon.label;
-      nameInput.value = stagedLink.link.name;
-      urlLabel.value = stagedLink.link.url;
-      if (stagedLink.link.accent.override) {
-        accentGlobalRadio.checked = false;
-        accentCustomRadio.checked = true;
-        accentColorPicker.removeAttribute("disabled");
-        accentColorHex.removeAttribute("disabled");
-        helper.removeClass(form.querySelector(".link-form-input-accent-helper"), "disabled");
-      } else {
-        accentGlobalRadio.checked = true;
-        accentCustomRadio.checked = false;
-        accentColorPicker.setAttribute("disabled", "");
-        accentColorHex.setAttribute("disabled", "");
-        helper.addClass(form.querySelector(".link-form-input-accent-helper"), "disabled");
-      };
-      if (stagedLink.link.accent.color.r != null && stagedLink.link.accent.color.g != null && stagedLink.link.accent.color.b != null) {
-        accentColorPicker.value = helper.rgbToHex(stagedLink.link.accent.color);
-        accentColorHex.value = helper.rgbToHex(stagedLink.link.accent.color);
-      };
-    };
-
-    makeGroupOptions();
-    makePostionOptions();
-    if (options.useStagedLink) {
-      populateForm();
-    };
-
-    groupExistingRadio.addEventListener("change", function(event) {
-      stagedLink.position.destination.group = groupExistingGroup.selectedIndex;
-      stagedLink.position.group.new = false;
-      groupExistingGroup.removeAttribute("disabled");
-      groupExistingPosition.removeAttribute("disabled");
-      helper.removeClass(groupExistingPositionLabel, "disabled");
-      groupNewInput.setAttribute("disabled", "");
-    }, false);
-    groupExistingGroup.addEventListener("change", function(event) {
-      stagedLink.position.destination.group = this.selectedIndex;
-      makePostionOptions();
-      stagedLink.position.destination.item = groupExistingPosition.selectedIndex;
-    }, false);
-    groupExistingPosition.addEventListener("change", function(event) {
-      stagedLink.position.destination.item = this.selectedIndex;
-    }, false);
-    groupNewRadio.addEventListener("change", function(event) {
-      stagedLink.position.destination.group = bookmarks.get().length;
-      stagedLink.position.group.new = true;
-      groupExistingGroup.setAttribute("disabled", "");
-      groupExistingPosition.setAttribute("disabled", "");
-      helper.addClass(groupExistingPositionLabel, "disabled");
-      groupNewInput.removeAttribute("disabled");
-    }, false);
-    groupNewInput.addEventListener("input", function(event) {
-      stagedLink.position.group.name = this.value;
-    }, false);
-    displayLetterRadio.addEventListener("change", function(event) {
-      stagedLink.link.display = this.value;
-    }, false);
-    displayIconRadio.addEventListener("change", function(event) {
-      stagedLink.link.display = this.value;
-    }, false);
-    displayLetterInput.addEventListener("input", function(event) {
-      stagedLink.link.letter = this.value;
-    }, false);
-    nameInput.addEventListener("input", function(event) {
-      stagedLink.link.name = this.value;
-    }, false);
-    urlInput.addEventListener("input", function(event) {
-      stagedLink.link.url = this.value;
-    }, false);
-    accentGlobalRadio.addEventListener("change", function() {
-      stagedLink.link.accent.override = false;
-      accentColorPicker.setAttribute("disabled", "");
-      accentColorHex.setAttribute("disabled", "");
-      helper.addClass(accentColorInputHelper, "disabled");
-    }, false);
-    accentCustomRadio.addEventListener("change", function() {
-      stagedLink.link.accent.override = true;
-      stagedLink.link.accent.color = helper.hexToRgb(accentColorPicker.value);
-      accentColorPicker.removeAttribute("disabled");
-      accentColorHex.removeAttribute("disabled");
-      helper.removeClass(accentColorInputHelper, "disabled");
-    }, false);
-    accentColorPicker.addEventListener("change", function() {
-      if (helper.isHexNumber(this.value)) {
-        stagedLink.link.accent.color = helper.hexToRgb(this.value);
-        accentColorHex.value = this.value;
-      };
-    }, false);
-    accentColorHex.addEventListener("input", function() {
-      if (helper.isHexNumber(this.value)) {
-        stagedLink.link.accent.color = helper.hexToRgb(this.value);
-        accentColorPicker.value = this.value;
-      };
-    }, false);
-    displayIconFormGroupClear.addEventListener("click", function(event) {
-      stagedLink.link.icon.name = null;
-      stagedLink.link.icon.prefix = null;
-      stagedLink.link.icon.label = null;
-      var existingIcon = helper.e(".link-form-icon");
-      if (existingIcon) {
-        existingIcon.remove();
-      };
-      displayIconInput.value = "";
-    }, false);
-    displayLetterRadio.addEventListener("change", function(event) {
-      displayLetterInput.removeAttribute("disabled");
-      displayIconInput.setAttribute("disabled", "");
-      helper.addClass(displayIconFormGroupText, "disabled");
-      helper.addClass(displayIconHelper, "disabled");
-      displayIconFormGroupClear.setAttribute("disabled", "");
-      displayIconFormGroupText.tabIndex = -1;
-    }, false);
-    displayIconRadio.addEventListener("change", function(event) {
-      displayLetterInput.setAttribute("disabled", "");
-      displayIconInput.removeAttribute("disabled");
-      helper.removeClass(displayIconFormGroupText, "disabled");
-      helper.removeClass(displayIconHelper, "disabled");
-      displayIconFormGroupClear.removeAttribute("disabled");
-      displayIconFormGroupText.tabIndex = 1;
-    }, false);
-    autoSuggest.bind.input({
-      input: displayIconInput,
-      type: "fontawesomeIcon",
-      postFocus: displayIconFormGroupText
-    });
-    return form;
   };
 
   render.autoSuggestIconAction = function(autoSuggestData) {
@@ -1055,7 +1135,7 @@ var link = (function() {
         cancelAction: cancelAction,
         actionText: "Add",
         size: "small",
-        content: render.form()
+        content: render.item.form()
       });
       shade.open({
         action: function() {
@@ -1093,14 +1173,15 @@ var link = (function() {
 
   var init = function() {
     mod.add.close();
-    render.area.width();
-    render.item.all();
-    render.item.tabindex();
-    render.item.size();
-    render.item.display.letter();
-    render.item.display.icon();
-    render.item.name();
-    render.item.border();
+    render.group.all();
+    // render.item.all();
+    // render.area.width();
+    // render.item.tabindex();
+    // render.item.size();
+    // render.item.display.letter();
+    // render.item.display.icon();
+    // render.item.name();
+    // render.item.border();
     bind.sort.group();
     bind.sort.item();
   };
