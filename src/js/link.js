@@ -176,11 +176,11 @@ var link = (function() {
         item: function(event) {
           bookmarks.mod.move.link({
             origin: {
-              group: Array.from(helper.getClosest(event.detail.origin.container, ".link-group-body").parentNode.children).indexOf(helper.getClosest(event.detail.origin.container, ".link-group-body")),
+              group: Array.from(helper.getClosest(event.detail.origin.container, ".link-group").parentNode.children).indexOf(helper.getClosest(event.detail.origin.container, ".link-group")),
               item: event.detail.origin.index
             },
             destination: {
-              group: Array.from(helper.getClosest(event.detail.destination.container, ".link-group-body").parentNode.children).indexOf(helper.getClosest(event.detail.destination.container, ".link-group-body")),
+              group: Array.from(helper.getClosest(event.detail.destination.container, ".link-group").parentNode.children).indexOf(helper.getClosest(event.detail.destination.container, ".link-group")),
               item: event.detail.destination.index
             }
           });
@@ -402,17 +402,18 @@ var link = (function() {
     },
     area: function(data) {
       var linkGroup = helper.node("div|class:link-group");
+
       var linkGroupHeader = helper.node("div|class:link-group-header");
+      var linkGroupControl = helper.node("div|class:link-group-control form-group");
+      linkGroupHeader.appendChild(linkGroupControl);
       var linkGroupName = helper.node("div|class:link-group-name");
       var linkGroupNameText = helper.node("h1:" + data.name + "|class:link-group-name-text");
-      var linkGroupBody = helper.node("div|class:link-group-body");
       linkGroup.appendChild(linkGroupHeader);
-      linkGroup.appendChild(linkGroupBody);
       linkGroupName.appendChild(linkGroupNameText);
       linkGroupHeader.appendChild(linkGroupName);
 
-      var linkGroupControl = helper.node("div|class:link-group-control form-group");
-      linkGroupHeader.appendChild(linkGroupControl);
+      var linkGroupBody = helper.node("div|class:link-group-body");
+      linkGroup.appendChild(linkGroupBody);
 
       var itemGroupControlItemDown = helper.node("button|class:button button-small link-group-control-item link-group-control-item-up,tabindex:-1,title:Move this bookmark down");
       var itemGroupControlItemDownIcon = helper.node("span|class:button-icon icon-arrow-up");

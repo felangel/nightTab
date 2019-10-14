@@ -59,11 +59,11 @@
   position: relative;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .link-group-name {
-  flex-grow: 1;
+  /* flex-grow: 1; */
 }
 
 .link-group-name-text {
@@ -74,13 +74,13 @@
 .link-group-control {
   margin-bottom: 0;
   overflow: hidden;
+  width: inherit;
   flex: 0;
-  justify-content: flex-end;
   transition: flex var(--layout-timing-extra-fast);
 }
 
 .is-link-edit .link-group-control {
-  flex: 1;
+  flex: 0.5;
 }
 
 .link-group-control-item {}
