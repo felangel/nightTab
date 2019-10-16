@@ -365,7 +365,7 @@ var link = (function() {
         bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
         groupAndItems();
-        render.previousFocus.previous.item(stagedLink);
+        render.previousFocus.previous.item(copyStagedLink);
         stagedLink.reset();
       },
       right: function(copyStagedLink) {
@@ -375,6 +375,7 @@ var link = (function() {
         bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
         groupAndItems();
+        render.previousFocus.next.item(copyStagedLink);
         stagedLink.reset();
       }
     }
@@ -432,12 +433,12 @@ var link = (function() {
 
       var groupBody = helper.node("div|class:group-body");
       group.appendChild(groupBody);
-      
+
       var itemGroupControlItemUp = helper.node("button|class:button button-small group-control-item group-control-item-up,tabindex:-1,title:Move this bookmark up");
       var itemGroupControlItemUpIcon = helper.node("span|class:button-icon icon-arrow-up");
       itemGroupControlItemUp.appendChild(itemGroupControlItemUpIcon);
       groupControl.appendChild(itemGroupControlItemUp);
-      
+
       var itemGroupControlItemHandle = helper.node("div|class:button button-small group-control-item group-control-item-handle,tabindex:-1,title:Drag and drop to reorder");
       var itemGroupControlItemHandleIcon = helper.node("span|class:button-icon icon-reorder");
       itemGroupControlItemHandle.appendChild(itemGroupControlItemHandleIcon);
@@ -1205,7 +1206,7 @@ var link = (function() {
     previous: {
       group: function(copyStagedGroup) {
         var allGroup = helper.eA(".group");
-        if (allGroup.length > 0 && copyStagedGroup.position.origin > 0) {
+        if (allGroup.length > 0 && copyStagedGroup.position.origin >= 0) {
           allGroup[copyStagedGroup.position.origin - 1].querySelector(".group-control-item").focus();
         } else {
           helper.e("body").focus();
@@ -1214,7 +1215,7 @@ var link = (function() {
       item: function(copyStagedLink) {
         var allGroup = helper.eA(".group");
         var allLinkPanelFront = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-panel-front");
-        if (allLinkPanelFront.length > 0 && copyStagedLink.position.origin.item > 0) {
+        if (allLinkPanelFront.length > 0 && copyStagedLink.position.origin.item >= 0) {
           allLinkPanelFront[copyStagedLink.position.origin.item - 1].focus();
         } else {
           helper.e("body").focus();
@@ -1224,7 +1225,7 @@ var link = (function() {
     next: {
       group: function(copyStagedGroup) {
         var allGroup = helper.eA(".group");
-        if (copyStagedGroup.position.origin < allGroup.length - 1) {
+        if (allGroup.length > 0 && copyStagedGroup.position.origin >= 0) {
           allGroup[copyStagedGroup.position.origin + 1].querySelector(".group-control-item").focus();
         } else {
           helper.e("body").focus();
@@ -1233,7 +1234,7 @@ var link = (function() {
       item: function(copyStagedLink) {
         var allGroup = helper.eA(".group");
         var allLinkPanelFront = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-panel-front");
-        if (allLinkPanelFront.length > 0 && copyStagedLink.position.origin.item > 0) {
+        if (allLinkPanelFront.length > 0 && copyStagedLink.position.origin.item >= 0) {
           allLinkPanelFront[copyStagedLink.position.origin.item + 1].focus();
         } else {
           helper.e("body").focus();
