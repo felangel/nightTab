@@ -237,8 +237,8 @@ var link = (function() {
 
   render.remove = {
     group: function(copyStagedGroup) {
-      stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup)).group;
-      stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup)).position;
+      stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup.group));
+      stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup.position));
       var heading;
       if (stagedGroup.group.name != null && stagedGroup.group.name != "") {
         heading = "Remove " + stagedGroup.group.name + " group";
@@ -246,12 +246,12 @@ var link = (function() {
         heading = "Remove unnamed group";
       };
       var successAction = function() {
-        // _previousFocus = _previousFocus - 1;
         bookmarks.remove.group(stagedGroup);
+        data.save();
         mod.edit.check();
         header.render.button.edit();
-        data.save();
         groupAndItems();
+        render.previousFocus.previous.group(copyStagedGroup);
         stagedGroup.reset();
         control.render.dependents();
         control.render.class();
@@ -260,7 +260,6 @@ var link = (function() {
       };
       var cancelAction = function() {
         stagedGroup.reset();
-        render.previousFocus();
         shade.close();
         pagelock.unlock();
       };
@@ -283,8 +282,8 @@ var link = (function() {
       pagelock.lock();
     },
     item: function(copyStagedLink) {
-      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
-      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
+      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink.link));
+      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink.position));
       var heading;
       if (stagedLink.link.name != null && stagedLink.link.name != "") {
         heading = "Remove " + stagedLink.link.name + " bookmark";
@@ -292,12 +291,12 @@ var link = (function() {
         heading = "Remove unnamed bookmark";
       };
       var successAction = function() {
-        // _previousFocus = _previousFocus - 1;
         bookmarks.remove.link(stagedLink);
+        data.save();
         mod.edit.check();
         header.render.button.edit();
-        data.save();
         groupAndItems();
+        render.previousFocus.previous.item(copyStagedLink);
         stagedLink.reset();
         control.render.dependents();
         control.render.class();
@@ -306,7 +305,6 @@ var link = (function() {
       };
       var cancelAction = function() {
         stagedLink.reset();
-        render.previousFocus();
         shade.close();
         pagelock.unlock();
       };
@@ -333,17 +331,8 @@ var link = (function() {
   render.move = {
     group: {
       up: function(copyStagedGroup) {
-        stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup)).group;
-        stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup)).position;
-        stagedGroup.position.destination = stagedGroup.position.destination + 1;
-        bookmarks.mod.move.group(stagedGroup);
-        data.save();
-        groupAndItems();
-        stagedGroup.reset();
-      },
-      down: function(copyStagedGroup) {
-        stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup)).group;
-        stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup)).position;
+        stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup.group));
+        stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup.position));
         stagedGroup.position.destination = stagedGroup.position.destination - 1;
         if (stagedGroup.position.destination < 0) {
           stagedGroup.position.destination = 0;
@@ -351,13 +340,24 @@ var link = (function() {
         bookmarks.mod.move.group(stagedGroup);
         data.save();
         groupAndItems();
+        render.previousFocus.previous.group(copyStagedGroup);
+        stagedGroup.reset();
+      },
+      down: function(copyStagedGroup) {
+        stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup.group));
+        stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup.position));
+        stagedGroup.position.destination = stagedGroup.position.destination + 1;
+        bookmarks.mod.move.group(stagedGroup);
+        data.save();
+        groupAndItems();
+        render.previousFocus.next.group(copyStagedGroup);
         stagedGroup.reset();
       }
     },
     link: {
       left: function(copyStagedLink) {
-        stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
-        stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
+        stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink.link));
+        stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink.position));
         stagedLink.position.destination.item = stagedLink.position.destination.item - 1;
         if (stagedLink.position.destination.item < 0) {
           stagedLink.position.destination.item = 0;
@@ -365,11 +365,12 @@ var link = (function() {
         bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
         groupAndItems();
+        render.previousFocus.previous.item(stagedLink);
         stagedLink.reset();
       },
       right: function(copyStagedLink) {
-        stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
-        stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
+        stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink.link));
+        stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink.position));
         stagedLink.position.destination.item = stagedLink.position.destination.item + 1;
         bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
@@ -431,21 +432,21 @@ var link = (function() {
 
       var groupBody = helper.node("div|class:group-body");
       group.appendChild(groupBody);
-
-      var itemGroupControlItemDown = helper.node("button|class:button button-small group-control-item group-control-item-up,tabindex:-1,title:Move this bookmark down");
-      var itemGroupControlItemDownIcon = helper.node("span|class:button-icon icon-arrow-up");
-      itemGroupControlItemDown.appendChild(itemGroupControlItemDownIcon);
-      groupControl.appendChild(itemGroupControlItemDown);
-
+      
+      var itemGroupControlItemUp = helper.node("button|class:button button-small group-control-item group-control-item-up,tabindex:-1,title:Move this bookmark up");
+      var itemGroupControlItemUpIcon = helper.node("span|class:button-icon icon-arrow-up");
+      itemGroupControlItemUp.appendChild(itemGroupControlItemUpIcon);
+      groupControl.appendChild(itemGroupControlItemUp);
+      
       var itemGroupControlItemHandle = helper.node("div|class:button button-small group-control-item group-control-item-handle,tabindex:-1,title:Drag and drop to reorder");
       var itemGroupControlItemHandleIcon = helper.node("span|class:button-icon icon-reorder");
       itemGroupControlItemHandle.appendChild(itemGroupControlItemHandleIcon);
       groupControl.appendChild(itemGroupControlItemHandle);
 
-      var itemGroupControlItemUp = helper.node("button|class:button button-small group-control-item group-control-item-down,tabindex:-1,title:Move this bookmark up");
-      var itemGroupControlItemUpIcon = helper.node("span|class:button-icon icon-arrow-down");
-      itemGroupControlItemUp.appendChild(itemGroupControlItemUpIcon);
-      groupControl.appendChild(itemGroupControlItemUp);
+      var itemGroupControlItemDown = helper.node("button|class:button button-small group-control-item group-control-item-down,tabindex:-1,title:Move this bookmark down");
+      var itemGroupControlItemDownIcon = helper.node("span|class:button-icon icon-arrow-down");
+      itemGroupControlItemDown.appendChild(itemGroupControlItemDownIcon);
+      groupControl.appendChild(itemGroupControlItemDown);
 
       var itemGroupControlItemEdit = helper.node("button|class:button button-small group-control-item group-control-item-edit,tabindex:-1,title:Edit this bookmark");
       var itemGroupControlItemEditIcon = helper.node("span|class:button-icon icon-edit");
@@ -459,12 +460,12 @@ var link = (function() {
 
       var copyStagedGroup = JSON.parse(JSON.stringify(stagedGroup));
 
-      itemGroupControlItemDown.addEventListener("click", function() {
-        render.move.group.down(copyStagedGroup);
-      }, false);
-
       itemGroupControlItemUp.addEventListener("click", function() {
         render.move.group.up(copyStagedGroup);
+      }, false);
+
+      itemGroupControlItemDown.addEventListener("click", function() {
+        render.move.group.down(copyStagedGroup);
       }, false);
 
       itemGroupControlItemEdit.addEventListener("click", function() {
@@ -478,8 +479,8 @@ var link = (function() {
       return group;
     },
     edit: function(copyStagedGroup) {
-      stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup)).group;
-      stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup)).position;
+      stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup.group));
+      stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup.position));
       var form = render.group.form({
         useStagedGroup: true
       });
@@ -496,7 +497,6 @@ var link = (function() {
       };
       var cancelAction = function() {
         stagedGroup.reset();
-        render.previousFocus();
         autoSuggest.close();
         pagelock.unlock();
         shade.close();
@@ -701,33 +701,29 @@ var link = (function() {
 
       linkLeft.addEventListener("click", function() {
         _previousFocus = copyStagedLink.position;
-        console.log(_previousFocus);
         render.move.link.left(copyStagedLink);
       }, false);
 
       linkRight.addEventListener("click", function() {
         _previousFocus = copyStagedLink.position;
-        console.log(_previousFocus);
         render.move.link.right(copyStagedLink);
       }, false);
 
       linkEdit.addEventListener("click", function() {
         _previousFocus = copyStagedLink.position;
-        console.log(_previousFocus);
         render.item.edit(copyStagedLink);
       }, false);
 
       linkRemove.addEventListener("click", function() {
         _previousFocus = copyStagedLink.position;
-        console.log(_previousFocus);
         render.remove.item(copyStagedLink);
       }, false);
 
       return linkItem;
     },
     edit: function(copyStagedLink) {
-      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
-      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
+      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink.link));
+      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink.position));
       var form = render.item.form({
         useStagedLink: true
       });
@@ -742,14 +738,13 @@ var link = (function() {
         data.save();
         groupAndItems();
         stagedLink.reset();
-        render.previousFocus();
+        // render.previousFocus();
         autoSuggest.close();
         shade.close();
         pagelock.unlock();
       };
       var cancelAction = function() {
         stagedLink.reset();
-        render.previousFocus();
         autoSuggest.close();
         pagelock.unlock();
         shade.close();
@@ -1206,22 +1201,95 @@ var link = (function() {
     }
   };
 
-  render.previousFocus = function() {
-    console.log(_previousFocus);
-    if (_previousFocus != null) {
-      var linkPanelFront = helper.eA(".link-panel-front");
-      if (linkPanelFront.length > 0) {
-        if (_previousFocus >= 0) {
-          linkPanelFront[_previousFocus].focus();
+  render.previousFocus = {
+    previous: {
+      group: function(copyStagedGroup) {
+        var allGroup = helper.eA(".group");
+        if (allGroup.length > 0 && copyStagedGroup.position.origin > 0) {
+          allGroup[copyStagedGroup.position.origin - 1].querySelector(".group-control-item").focus();
         } else {
-          linkPanelFront[0].focus();
+          helper.e("body").focus();
         };
-      } else {
-        helper.e("body").focus();
-      };
-      _previousFocus = null;
-    };
+      },
+      item: function(copyStagedLink) {
+        var allGroup = helper.eA(".group");
+        var allLinkPanelFront = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-panel-front");
+        if (allLinkPanelFront.length > 0 && copyStagedLink.position.origin.item > 0) {
+          allLinkPanelFront[copyStagedLink.position.origin.item - 1].focus();
+        } else {
+          helper.e("body").focus();
+        };
+      }
+    },
+    next: {
+      group: function(copyStagedGroup) {
+        var allGroup = helper.eA(".group");
+        if (copyStagedGroup.position.origin < allGroup.length - 1) {
+          allGroup[copyStagedGroup.position.origin + 1].querySelector(".group-control-item").focus();
+        } else {
+          helper.e("body").focus();
+        };
+      },
+      item: function(copyStagedLink) {
+        var allGroup = helper.eA(".group");
+        var allLinkPanelFront = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-panel-front");
+        if (allLinkPanelFront.length > 0 && copyStagedLink.position.origin.item > 0) {
+          allLinkPanelFront[copyStagedLink.position.origin.item + 1].focus();
+        } else {
+          helper.e("body").focus();
+        };
+      }
+    },
+    current: function() {
+
+    },
+    focus: {
+      group: function() {
+        var allGroup = helper.eA(".group");
+        if (allGroup.length > 0) {
+          allGroup[_previousFocus.destination.group].querySelector(".group-control-item").focus();
+        } else {
+          if (allGroup.length > 0) {
+            allGroup[0].querySelector(".group-control-item").focus();
+          } else {
+            helper.e("body").focus();
+          };
+        };
+        _previousFocus = null;
+      },
+      link: function() {
+        var allGroup = helper.eA(".group");
+        var allLinkPanelFront = allGroup[_previousFocus.origin.group].querySelectorAll(".link-panel-front");
+        if (allLinkPanelFront.length > 0) {
+          allLinkPanelFront[_previousFocus.origin.item].focus();
+        } else {
+          if (allLinkPanelFront.length > 0) {
+            allLinkPanelFront[0].focus();
+          } else {
+            helper.e("body").focus();
+          };
+        };
+        _previousFocus = null;
+      }
+    }
   };
+
+  // render.previousFocus = function() {
+  //   console.log(_previousFocus);
+  //   if (_previousFocus != null) {
+  //     var linkPanelFront = helper.eA(".link-panel-front");
+  //     if (linkPanelFront.length > 0) {
+  //       if (_previousFocus >= 0) {
+  //         linkPanelFront[_previousFocus].focus();
+  //       } else {
+  //         linkPanelFront[0].focus();
+  //       };
+  //     } else {
+  //       helper.e("body").focus();
+  //     };
+  //     _previousFocus = null;
+  //   };
+  // };
 
   render.autoSuggestIconAction = function(autoSuggestData) {
     stagedLink.link.icon.label = autoSuggestData.label;
@@ -1319,7 +1387,6 @@ var link = (function() {
     render.item.name();
     render.item.border();
     render.area.width();
-    render.previousFocus();
   };
 
   // exposed methods
