@@ -136,17 +136,29 @@ var bookmarks = (function() {
     }
   };
 
-  mod.edit = function(data) {
-    if (data.position.group.new) {
-      mod.add.group(data);
-    };
-    var item = JSON.parse(JSON.stringify(data.link));
-    mod.all[data.position.origin.group].items.splice(data.position.origin.item, 1);
-    mod.all[data.position.destination.group].items.splice(data.position.destination.item, 0, item);
+  mod.edit = {
+    link: function(data) {
+      if (data.position.group.new) {
+        mod.add.group(data);
+      };
+      var item = JSON.parse(JSON.stringify(data.link));
+      mod.all[data.position.origin.group].items.splice(data.position.origin.item, 1);
+      mod.all[data.position.destination.group].items.splice(data.position.destination.item, 0, item);
+    },
+    group: function(data) {
+      var group = JSON.parse(JSON.stringify(mod.all[data.position.origin]));
+      mod.all.splice(data.position.origin, 1);
+      mod.all.splice(data.position.destination, 0, group);
+    }
   };
 
-  mod.remove = function(data) {
-    mod.all[data.position.destination.group].items.splice(data.position.destination.item, 1);
+  mod.remove = {
+    link: function(data) {
+      mod.all[data.position.origin.group].items.splice(data.position.origin.item, 1);
+    },
+    group: function(data) {
+      mod.all.splice(data.position.origin, 1);
+    }
   };
 
   mod.sort = function(by) {
@@ -166,14 +178,14 @@ var bookmarks = (function() {
 
   mod.move = {
     link: function(data) {
-      var item = JSON.parse(JSON.stringify(mod.all[data.origin.group].items[data.origin.item]));
-      mod.all[data.origin.group].items.splice(data.origin.item, 1);
-      mod.all[data.destination.group].items.splice(data.destination.item, 0, item);
+      var item = JSON.parse(JSON.stringify(mod.all[data.position.origin.group].items[data.position.origin.item]));
+      mod.all[data.position.origin.group].items.splice(data.position.origin.item, 1);
+      mod.all[data.position.destination.group].items.splice(data.position.destination.item, 0, item);
     },
     group: function(data) {
-      var group = JSON.parse(JSON.stringify(mod.all[data.origin.group]));
-      mod.all.splice(data.origin.group, 1);
-      mod.all.splice(data.destination.group, 0, group);
+      var group = JSON.parse(JSON.stringify(mod.all[data.position.origin]));
+      mod.all.splice(data.position.origin, 1);
+      mod.all.splice(data.position.destination, 0, group);
     }
   };
 
@@ -201,8 +213,13 @@ var bookmarks = (function() {
     mod.sort(by);
   };
 
-  var remove = function(data) {
-    mod.remove(data);
+  var remove = {
+    link: function(data) {
+      mod.remove.link(data);
+    },
+    group: function(data) {
+      mod.remove.group(data);
+    }
   };
 
   var init = function() {

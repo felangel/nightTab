@@ -93,7 +93,7 @@ var keyboard = (function() {
       if (state.get().theme.accent.random.active && event.ctrlKey && event.altKey && event.keyCode == 82) {
         theme.render.accent.random();
         theme.render.accent.color();
-        link.items();
+        link.groupAndItems();
         data.save();
       };
     }, false);

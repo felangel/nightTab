@@ -1153,8 +1153,8 @@ input[type="range"]:disabled::-moz-range-progress {
 
 .form-group-text:hover,
 .form-group-text:focus {
-  background-color: rgb(var(--theme-gray-03));
-  border-bottom-color: rgb(var(--theme-gray-08));
+  /* background-color: rgb(var(--theme-gray-03)); */
+  /* border-bottom-color: rgb(var(--theme-gray-08)); */
   outline: none;
 }
 
@@ -1206,7 +1206,7 @@ input[type="range"]:disabled::-moz-range-progress {
 
 .form-group .form-group-text {
   margin-bottom: 0;
-  margin-left: calc(-1px * var(--form-input-border));
+  /* margin-left: calc(-1px * var(--form-input-border)); */
   border-radius: 0;
   z-index: 1;
   position: relative;

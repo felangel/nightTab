@@ -2,6 +2,24 @@ var link = (function() {
 
   var _previousFocus = null;
 
+  var stagedGroup = {
+    position: {
+      origin: null,
+      destination: null
+    },
+    group: {
+      name: null,
+      items: null
+    }
+  };
+
+  stagedGroup.reset = function() {
+    stagedGroup.position.origin = null;
+    stagedGroup.position.destination = null;
+    stagedGroup.group.name = null;
+    stagedGroup.group.items = null;
+  };
+
   var stagedLink = {
     position: {
       origin: {
@@ -156,42 +174,22 @@ var link = (function() {
     update: {
       func: {
         group: function(event) {
-          bookmarks.mod.move.group({
-            origin: {
-              group: event.detail.origin.index
-            },
-            destination: {
-              group: event.detail.destination.index
-            }
-          });
+          stagedGroup.position.origin = event.detail.origin.index;
+          stagedGroup.position.destination = event.detail.destination.index;
+          bookmarks.mod.move.group(stagedGroup);
           data.save();
-          render.clear();
-          render.group.all();
-          // render.item.all();
-          // render.item.tabindex();
-          // render.previousFocus();
-          bind.sort.group();
-          bind.sort.item();
+          groupAndItems();
+          stagedGroup.reset();
         },
         item: function(event) {
-          bookmarks.mod.move.link({
-            origin: {
-              group: Array.from(helper.getClosest(event.detail.origin.container, ".link-group").parentNode.children).indexOf(helper.getClosest(event.detail.origin.container, ".link-group")),
-              item: event.detail.origin.index
-            },
-            destination: {
-              group: Array.from(helper.getClosest(event.detail.destination.container, ".link-group").parentNode.children).indexOf(helper.getClosest(event.detail.destination.container, ".link-group")),
-              item: event.detail.destination.index
-            }
-          });
+          stagedLink.position.origin.group = Array.from(helper.getClosest(event.detail.origin.container, ".group").parentNode.children).indexOf(helper.getClosest(event.detail.origin.container, ".group"));
+          stagedLink.position.origin.item = event.detail.origin.index;
+          stagedLink.position.destination.group = Array.from(helper.getClosest(event.detail.destination.container, ".group").parentNode.children).indexOf(helper.getClosest(event.detail.destination.container, ".group"));
+          stagedLink.position.destination.item = event.detail.destination.index
+          bookmarks.mod.move.link(stagedLink);
           data.save();
-          render.clear();
-          render.group.all();
-          // render.item.all();
-          // render.item.tabindex();
-          // render.previousFocus();
-          bind.sort.group();
-          bind.sort.item();
+          groupAndItems();
+          stagedLink.reset();
         }
       },
       remove: {
@@ -201,7 +199,7 @@ var link = (function() {
           });
         },
         item: function() {
-          helper.eA(".link-group-body").forEach(function(arrayItem, index) {
+          helper.eA(".group-body").forEach(function(arrayItem, index) {
             sortable(arrayItem)[0].removeEventListener("sortupdate", bind.sort.update.func.item, false);
           });
         }
@@ -209,8 +207,8 @@ var link = (function() {
     },
     group: function() {
       sortable(".link", {
-        items: ".link-group",
-        handle: ".link-group-control-item-handle",
+        items: ".group",
+        handle: ".group-control-item-handle",
         orientation: "vertical",
         placeholder: helper.node("div|class:link-placeholder"),
         forcePlaceholderSize: true
@@ -221,15 +219,15 @@ var link = (function() {
       });
     },
     item: function() {
-      sortable(".link-group-body", {
+      sortable(".group-body", {
         items: ".link-item",
         handle: ".link-control-item-handle",
-        acceptFrom: '.link-group-body',
+        acceptFrom: '.group-body',
         placeholder: helper.node("div|class:link-placeholder"),
         forcePlaceholderSize: true
       });
       bind.sort.update.remove.item();
-      helper.eA(".link-group-body").forEach(function(arrayItem, index) {
+      helper.eA(".group-body").forEach(function(arrayItem, index) {
         sortable(arrayItem)[0].addEventListener("sortupdate", bind.sort.update.func.item, false, event);
       });
     }
@@ -237,64 +235,133 @@ var link = (function() {
 
   var render = {};
 
-  render.remove = function(copyStagedLink) {
-    stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
-    stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
-    var heading;
-    if (stagedLink.link.name != null && stagedLink.link.name != "") {
-      heading = "Remove " + stagedLink.link.name + " bookmark";
-    } else {
-      heading = "Remove unnamed bookmark";
-    };
-    var successAction = function() {
-      _previousFocus = _previousFocus - 1;
-      bookmarks.remove(stagedLink);
-      mod.edit.check();
-      header.render.button.edit();
-      data.save();
-      render.clear();
-      render.item.all();
-      render.item.tabindex();
-      render.previousFocus();
-      bind.sort.group();
-      bind.sort.item();
-      stagedLink.reset();
-      control.render.dependents();
-      control.render.class();
-      shade.close();
-      pagelock.unlock();
-    };
-    var cancelAction = function() {
-      render.previousFocus();
-      shade.close();
-      pagelock.unlock();
-    };
-    modal.open({
-      heading: heading,
-      content: "Are you sure you want to remove this bookmark? This can not be undone.",
-      successAction: successAction,
-      cancelAction: cancelAction,
-      actionText: "Remove",
-      size: "small"
-    });
-    shade.open({
-      action: function() {
-        render.clear();
-        render.item.all();
-        render.item.tabindex();
-        render.previousFocus();
-        bind.sort.group();
-        bind.sort.item();
-        stagedLink.reset();
-        autoSuggest.close();
+  render.remove = {
+    group: function(copyStagedGroup) {
+      stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup)).group;
+      stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup)).position;
+      var heading;
+      if (stagedGroup.group.name != null && stagedGroup.group.name != "") {
+        heading = "Remove " + stagedGroup.group.name + " group";
+      } else {
+        heading = "Remove unnamed group";
+      };
+      var successAction = function() {
+        // _previousFocus = _previousFocus - 1;
+        bookmarks.remove.group(stagedGroup);
+        mod.edit.check();
+        header.render.button.edit();
+        data.save();
+        groupAndItems();
+        stagedGroup.reset();
+        control.render.dependents();
+        control.render.class();
+        shade.close();
         pagelock.unlock();
-        modal.close();
-      }
-    });
-    pagelock.lock();
+      };
+      var cancelAction = function() {
+        stagedGroup.reset();
+        render.previousFocus();
+        shade.close();
+        pagelock.unlock();
+      };
+      modal.open({
+        heading: heading,
+        content: "Are you sure you want to remove this group and all the bookmarks within? This can not be undone.",
+        successAction: successAction,
+        cancelAction: cancelAction,
+        actionText: "Remove",
+        size: "small"
+      });
+      shade.open({
+        action: function() {
+          stagedGroup.reset();
+          autoSuggest.close();
+          pagelock.unlock();
+          modal.close();
+        }
+      });
+      pagelock.lock();
+    },
+    item: function(copyStagedLink) {
+      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
+      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
+      var heading;
+      if (stagedLink.link.name != null && stagedLink.link.name != "") {
+        heading = "Remove " + stagedLink.link.name + " bookmark";
+      } else {
+        heading = "Remove unnamed bookmark";
+      };
+      var successAction = function() {
+        // _previousFocus = _previousFocus - 1;
+        bookmarks.remove.link(stagedLink);
+        mod.edit.check();
+        header.render.button.edit();
+        data.save();
+        groupAndItems();
+        stagedLink.reset();
+        control.render.dependents();
+        control.render.class();
+        shade.close();
+        pagelock.unlock();
+      };
+      var cancelAction = function() {
+        stagedLink.reset();
+        render.previousFocus();
+        shade.close();
+        pagelock.unlock();
+      };
+      modal.open({
+        heading: heading,
+        content: "Are you sure you want to remove this bookmark? This can not be undone.",
+        successAction: successAction,
+        cancelAction: cancelAction,
+        actionText: "Remove",
+        size: "small"
+      });
+      shade.open({
+        action: function() {
+          stagedLink.reset();
+          autoSuggest.close();
+          pagelock.unlock();
+          modal.close();
+        }
+      });
+      pagelock.lock();
+    }
   };
 
   render.move = {
+    group: {
+      up: function(copyStagedGroup) {
+        stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup)).group;
+        stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup)).position;
+        stagedGroup.position.destination = stagedGroup.position.destination + 1;
+        bookmarks.mod.move.group(stagedGroup);
+        data.save();
+        render.clear.item();
+        render.clear.group();
+        render.all();
+        stagedGroup.reset();
+        bind.sort.group();
+        bind.sort.item();
+      },
+      down: function(copyStagedGroup) {
+        stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup)).group;
+        stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup)).position;
+        stagedGroup.position.destination = stagedGroup.position.destination - 1;
+        if (stagedGroup.position.destination < 0) {
+          stagedGroup.position.destination = 0;
+        };
+        bookmarks.mod.move.group(stagedGroup);
+        data.save();
+        render.clear.item();
+        render.clear.group();
+        render.all();
+        stagedGroup.reset();
+        bind.sort.group();
+        bind.sort.item();
+      }
+    },
     link: {
       left: function(copyStagedLink) {
         stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
@@ -303,38 +370,46 @@ var link = (function() {
         if (stagedLink.position.destination.item < 0) {
           stagedLink.position.destination.item = 0;
         };
-        bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
+        bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
-        render.clear();
-        render.item.all();
-        render.item.tabindex();
-        render.previousFocus();
+        render.clear.item();
+        render.clear.group();
+        render.all();
+        stagedLink.reset();
         bind.sort.group();
         bind.sort.item();
-        stagedLink.reset();
       },
       right: function(copyStagedLink) {
         stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
         stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink)).position;
         stagedLink.position.destination.item = stagedLink.position.destination.item + 1;
-        bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
+        bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
-        render.clear();
-        render.item.all();
-        render.item.tabindex();
-        render.previousFocus();
+        render.clear.item();
+        render.clear.group();
+        render.all();
+        stagedLink.reset();
         bind.sort.group();
         bind.sort.item();
-        stagedLink.reset();
       }
     }
   };
 
-  render.clear = function() {
-    var link = helper.e(".link");
-    while (link.lastChild) {
-      link.removeChild(link.lastChild);
-    };
+  render.clear = {
+    group: function() {
+      var link = helper.e(".link");
+      while (link.lastChild) {
+        link.removeChild(link.lastChild);
+      };
+    },
+    item: function() {
+      var groupBody = helper.eA(".group-body");
+      groupBody.forEach(function(arrayItem, index) {
+        while (arrayItem.lastChild) {
+          arrayItem.removeChild(arrayItem.lastChild);
+        };
+      });
+    }
   };
 
   render.area = {
@@ -345,102 +420,131 @@ var link = (function() {
   };
 
   render.group = {
-    all: function() {
-      var linkSection = helper.e(".link");
-      var bookmarksToRender = false;
-      if (state.get().search) {
-        bookmarksToRender = search.get();
-      } else {
-        bookmarksToRender = bookmarks.get();
-      };
-      var make = {
-        bookmarks: function(data) {
-          data.forEach(function(arrayItem, index) {
-            stagedLink.position.origin.group = index;
-            stagedLink.position.destination.group = index;
-            linkGroup = render.group.area(arrayItem);
-            arrayItem.items.forEach(function(arrayItem, index) {
-              stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
-              stagedLink.position.origin.item = index;
-              stagedLink.position.destination.item = index;
-              linkGroup.querySelector(".link-group-body").appendChild(render.item.link());
-            });
-            linkSection.appendChild(linkGroup);
-            stagedLink.reset();
-          });
-        },
-        empty: {
-          search: function() {
-            linkSection.appendChild(render.empty.search());
-          },
-          bookmarks: function() {
-            linkSection.appendChild(render.empty.bookmarks());
-          }
-        }
-      };
-      // if searching
-      if (state.get().search) {
-        // if bookmarks exist to be searched
-        if (bookmarksToRender.total > 0) {
-          // if matching bookmarks found
-          if (bookmarksToRender.matching.length > 0) {
-            make.bookmarks(bookmarksToRender.matching);
-          } else {
-            make.empty.search();
-          };
-        } else {
-          make.empty.bookmarks();
-        };
-      } else {
-        // if bookmarks exist
-        if (bookmarksToRender.length > 0) {
-          make.bookmarks(bookmarksToRender);
-        } else {
-          make.empty.bookmarks();
-        };
-      };
-    },
-    area: function(data) {
-      var linkGroup = helper.node("div|class:link-group");
+    area: function() {
+      var group = helper.node("div|class:group");
 
-      var linkGroupHeader = helper.node("div|class:link-group-header");
-      var linkGroupControl = helper.node("div|class:link-group-control form-group");
-      linkGroupHeader.appendChild(linkGroupControl);
-      var linkGroupName = helper.node("div|class:link-group-name");
-      var linkGroupNameText = helper.node("h1:" + data.name + "|class:link-group-name-text");
-      linkGroup.appendChild(linkGroupHeader);
-      linkGroupName.appendChild(linkGroupNameText);
-      linkGroupHeader.appendChild(linkGroupName);
+      var groupHeader = helper.node("div|class:group-header");
+      var groupName = helper.node("div|class:group-name");
+      var groupNameText = helper.node("h1:" + stagedGroup.group.name + "|class:group-name-text");
+      var groupControlOptions = {
+        tag: "div",
+        attr: [{
+          key: "class",
+          value: "group-control form-group"
+        }]
+      };
+      if (invert(state.get().theme.accent.current, true) == "#000000") {
+        groupControlOptions.attr[0].value = groupControlOptions.attr[0].value + " group-control-text-dark";
+      } else if (invert(stagedLink.link.accent.color, true) == "#ffffff") {
+        groupControlOptions.attr[0].value = groupControlOptions.attr[0].value + " group-control-text-light";
+      };
+      var groupControl = helper.makeNode(groupControlOptions);
 
-      var linkGroupBody = helper.node("div|class:link-group-body");
-      linkGroup.appendChild(linkGroupBody);
+      groupName.appendChild(groupNameText);
+      groupHeader.appendChild(groupControl);
+      groupHeader.appendChild(groupName);
+      group.appendChild(groupHeader);
 
-      var itemGroupControlItemDown = helper.node("button|class:button button-small link-group-control-item link-group-control-item-up,tabindex:-1,title:Move this bookmark down");
+      var groupBody = helper.node("div|class:group-body");
+      group.appendChild(groupBody);
+
+      var itemGroupControlItemDown = helper.node("button|class:button button-small group-control-item group-control-item-up,tabindex:-1,title:Move this bookmark down");
       var itemGroupControlItemDownIcon = helper.node("span|class:button-icon icon-arrow-up");
       itemGroupControlItemDown.appendChild(itemGroupControlItemDownIcon);
-      linkGroupControl.appendChild(itemGroupControlItemDown);
+      groupControl.appendChild(itemGroupControlItemDown);
 
-      var itemGroupControlItemHandle = helper.node("div|class:button button-small link-group-control-item link-group-control-item-handle,tabindex:-1,title:Drag and drop to reorder");
+      var itemGroupControlItemHandle = helper.node("div|class:button button-small group-control-item group-control-item-handle,tabindex:-1,title:Drag and drop to reorder");
       var itemGroupControlItemHandleIcon = helper.node("span|class:button-icon icon-reorder");
       itemGroupControlItemHandle.appendChild(itemGroupControlItemHandleIcon);
-      linkGroupControl.appendChild(itemGroupControlItemHandle);
+      groupControl.appendChild(itemGroupControlItemHandle);
 
-      var itemGroupControlItemUp = helper.node("button|class:button button-small link-group-control-item link-group-control-item-down,tabindex:-1,title:Move this bookmark up");
+      var itemGroupControlItemUp = helper.node("button|class:button button-small group-control-item group-control-item-down,tabindex:-1,title:Move this bookmark up");
       var itemGroupControlItemUpIcon = helper.node("span|class:button-icon icon-arrow-down");
       itemGroupControlItemUp.appendChild(itemGroupControlItemUpIcon);
-      linkGroupControl.appendChild(itemGroupControlItemUp);
+      groupControl.appendChild(itemGroupControlItemUp);
 
-      var itemGroupControlItemEdit = helper.node("button|class:button button-small link-group-control-item link-group-control-item-edit,tabindex:-1,title:Edit this bookmark");
+      var itemGroupControlItemEdit = helper.node("button|class:button button-small group-control-item group-control-item-edit,tabindex:-1,title:Edit this bookmark");
       var itemGroupControlItemEditIcon = helper.node("span|class:button-icon icon-edit");
       itemGroupControlItemEdit.appendChild(itemGroupControlItemEditIcon);
-      linkGroupControl.appendChild(itemGroupControlItemEdit);
+      groupControl.appendChild(itemGroupControlItemEdit);
 
-      var itemGroupControlItemRemove = helper.node("button|class:button button-small link-group-control-item link-group-control-item-remove,tabindex:-1,title:Remove this bookmark");
+      var itemGroupControlItemRemove = helper.node("button|class:button button-small group-control-item group-control-item-remove,tabindex:-1,title:Remove this bookmark");
       var itemGroupControlItemRemoveIcon = helper.node("span|class:button-icon icon-close");
       itemGroupControlItemRemove.appendChild(itemGroupControlItemRemoveIcon);
-      linkGroupControl.appendChild(itemGroupControlItemRemove);
+      groupControl.appendChild(itemGroupControlItemRemove);
 
-      return linkGroup;
+      var copyStagedGroup = JSON.parse(JSON.stringify(stagedGroup));
+
+      itemGroupControlItemDown.addEventListener("click", function() {
+        render.move.group.down(copyStagedGroup);
+      }, false);
+
+      itemGroupControlItemUp.addEventListener("click", function() {
+        render.move.group.up(copyStagedGroup);
+      }, false);
+
+      itemGroupControlItemEdit.addEventListener("click", function() {
+        render.group.edit(copyStagedGroup);
+      }, false);
+
+      itemGroupControlItemRemove.addEventListener("click", function() {
+        render.remove.group(copyStagedGroup);
+      }, false);
+
+      return group;
+    },
+    edit: function(copyStagedGroup) {
+      stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup)).group;
+      stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup)).position;
+      var form = render.group.form({
+        useStagedGroup: true
+      });
+      var heading = "Edit " + stagedGroup.group.name;
+      var successAction = function() {
+        bookmarks.edit(JSON.parse(JSON.stringify(stagedGroup)));
+        data.save();
+        groupAndItems();
+        stagedGroup.reset();
+        render.previousFocus();
+        autoSuggest.close();
+        shade.close();
+        pagelock.unlock();
+      };
+      var cancelAction = function() {
+        stagedGroup.reset();
+        render.previousFocus();
+        autoSuggest.close();
+        pagelock.unlock();
+        shade.close();
+      };
+      modal.open({
+        heading: heading,
+        successAction: successAction,
+        cancelAction: cancelAction,
+        actionText: "Save",
+        size: "small",
+        content: form
+      });
+      shade.open({
+        action: function() {
+          stagedGroup.reset();
+          autoSuggest.close();
+          pagelock.unlock();
+          modal.close();
+        }
+      });
+    },
+    tabindex: function() {
+      var allGroupControlItem = helper.eA(".group-control-item");
+      if (state.get().link.edit) {
+        allGroupControlItem.forEach(function(arrayItem, index) {
+          arrayItem.tabIndex = 1;
+        });
+      } else {
+        allGroupControlItem.forEach(function(arrayItem, index) {
+          arrayItem.tabIndex = -1;
+        });
+      };
     },
     form: function(override) {
       var options = {
@@ -451,6 +555,48 @@ var link = (function() {
       };
       var form = helper.node("form|class:group-form");
       var fieldset = helper.node("fieldset");
+
+      // group position
+      var groupFormPositionInputWrap = helper.node("div|class:input-wrap");
+      var groupFormPositionLabel = helper.node("label:Position|for:group-form-position");
+      var groupFormPositionSelect = helper.node("select|id:group-form-position,class:group-form-position mb-0,tabindex:1");
+
+      // group name
+      var groupFormNameInputWrap = helper.node("div|class:input-wrap");
+      var groupFormInputLabel = helper.node("label:Name|for:group-form-input-name");
+      var groupFormInputName = helper.node("input|type:text,class:group-form-input-name mb-0,id:group-form-input-name,placeholder:Example group,tabindex:1,autocomplete:off,autocorrect:off,autocapitalize:off,spellcheck:false");
+
+      groupFormPositionInputWrap.appendChild(groupFormPositionLabel);
+      groupFormPositionInputWrap.appendChild(groupFormPositionSelect);
+      groupFormNameInputWrap.appendChild(groupFormInputLabel);
+      groupFormNameInputWrap.appendChild(groupFormInputName);
+      fieldset.appendChild(groupFormPositionInputWrap);
+      fieldset.appendChild(groupFormNameInputWrap);
+      form.appendChild(fieldset);
+
+      var makeGroupOptions = function() {
+        var optionCount = bookmarks.get().length;
+        for (var i = 1; i <= optionCount; i++) {
+          groupFormPositionSelect.appendChild(helper.node("option:" + helper.ordinalNumber(i)));
+        };
+      };
+
+      var populateForm = function() {
+        groupFormPositionSelect.selectedIndex = stagedGroup.position.origin;
+        groupFormInputName.value = stagedGroup.group.name;
+      };
+
+      makeGroupOptions();
+      if (options.useStagedGroup) {
+        populateForm();
+      };
+
+      groupFormPositionSelect.addEventListener("change", function(event) {
+        stagedGroup.position.destination = this.selectedIndex;
+      }, false);
+      groupFormInputName.addEventListener("input", function(event) {
+        stagedGroup.group.name = this.value;
+      }, false);
 
       return form;
     }
@@ -584,61 +730,10 @@ var link = (function() {
 
       linkRemove.addEventListener("click", function() {
         // _previousFocus = stagedLink.position;
-        render.remove(copyStagedLink);
+        render.remove.item(copyStagedLink);
       }, false);
 
       return linkItem;
-    },
-    all: function(linkGroup) {
-      var linkSection = helper.e(".link");
-      var bookmarksToRender = false;
-      if (state.get().search) {
-        bookmarksToRender = search.get();
-      } else {
-        bookmarksToRender = bookmarks.get();
-      };
-      var action = {
-        bookmarks: function(data) {
-          data.forEach(function(arrayItem, index) {
-            arrayItem.items.forEach(function(arrayItem, index) {
-              stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
-              stagedLink.position.origin.item = index;
-              stagedLink.position.destination.item = index;
-              var linkItem = render.item.link();
-              linkGroup.querySelector(".link-group-body").appendChild(linkItem);
-            });
-          });
-        },
-        empty: {
-          search: function() {
-            linkSection.appendChild(render.empty.search());
-          },
-          bookmarks: function() {
-            linkSection.appendChild(render.empty.bookmarks());
-          }
-        }
-      };
-      // if searching
-      if (state.get().search) {
-        // if bookmarks exist to be searched
-        if (bookmarksToRender.total > 0) {
-          // if matching bookmarks found
-          if (bookmarksToRender.matching.length > 0) {
-            action.bookmarks(bookmarksToRender.matching);
-          } else {
-            action.empty.search();
-          };
-        } else {
-          action.empty.bookmarks();
-        };
-      } else {
-        // if bookmarks exist
-        if (bookmarksToRender.length > 0) {
-          action.bookmarks(bookmarksToRender);
-        } else {
-          action.empty.bookmarks();
-        };
-      };
     },
     edit: function(copyStagedLink) {
       stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
@@ -655,20 +750,16 @@ var link = (function() {
       var successAction = function() {
         bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
-        render.clear();
-        render.item.all();
-        render.item.tabindex();
-        render.previousFocus();
-        bind.sort.group();
-        bind.sort.item();
+        groupAndItems();
         stagedLink.reset();
+        render.previousFocus();
         autoSuggest.close();
         shade.close();
         pagelock.unlock();
       };
       var cancelAction = function() {
-        render.previousFocus();
         stagedLink.reset();
+        render.previousFocus();
         autoSuggest.close();
         pagelock.unlock();
         shade.close();
@@ -683,12 +774,6 @@ var link = (function() {
       });
       shade.open({
         action: function() {
-          render.clear();
-          render.item.all();
-          render.item.tabindex();
-          render.previousFocus();
-          bind.sort.group();
-          bind.sort.item();
           stagedLink.reset();
           autoSuggest.close();
           pagelock.unlock();
@@ -747,8 +832,8 @@ var link = (function() {
       var groupExistingFormIndent = helper.node("div|class:form-indent");
       var groupExistingGroupInputWrap = helper.node("div|class:input-wrap");
       var groupExistingGroup = helper.node("select|id:link-form-select-group,class:link-form-select-group mb-0,tabindex:1");
-      var groupExistingPositionLabel = helper.node("label:Position|for:link-form-position");
       var groupExistingPositionInputWrap = helper.node("div|class:input-wrap");
+      var groupExistingPositionLabel = helper.node("label:Position|for:link-form-position");
       var groupExistingPosition = helper.node("select|id:link-form-position,class:link-form-position mb-0,tabindex:1");
 
       // group new
@@ -1051,6 +1136,67 @@ var link = (function() {
     }
   };
 
+  render.all = function() {
+    var linkSection = helper.e(".link");
+    var bookmarksToRender = false;
+    if (state.get().search) {
+      bookmarksToRender = search.get();
+    } else {
+      bookmarksToRender = bookmarks.get();
+    };
+    var make = {
+      bookmarks: function(data) {
+        data.forEach(function(arrayItem, index) {
+          stagedGroup.position.origin = index;
+          stagedGroup.position.destination = index;
+          stagedGroup.position.origin = index;
+          stagedGroup.group = JSON.parse(JSON.stringify(arrayItem));
+          stagedLink.position.origin.group = index;
+          stagedLink.position.destination.group = index;
+          group = render.group.area();
+          arrayItem.items.forEach(function(arrayItem, index) {
+            stagedLink.link = JSON.parse(JSON.stringify(arrayItem));
+            stagedLink.position.origin.item = index;
+            stagedLink.position.destination.item = index;
+            group.querySelector(".group-body").appendChild(render.item.link());
+          });
+          linkSection.appendChild(group);
+          stagedGroup.reset();
+          stagedLink.reset();
+        });
+      },
+      empty: {
+        search: function() {
+          linkSection.appendChild(render.empty.search());
+        },
+        bookmarks: function() {
+          linkSection.appendChild(render.empty.bookmarks());
+        }
+      }
+    };
+    // if searching
+    if (state.get().search) {
+      // if bookmarks exist to be searched
+      if (bookmarksToRender.total > 0) {
+        // if matching bookmarks found
+        if (bookmarksToRender.matching.length > 0) {
+          make.bookmarks(bookmarksToRender.matching);
+        } else {
+          make.empty.search();
+        };
+      } else {
+        make.empty.bookmarks();
+      };
+    } else {
+      // if bookmarks exist
+      if (bookmarksToRender.length > 0) {
+        make.bookmarks(bookmarksToRender);
+      } else {
+        make.empty.bookmarks();
+      };
+    };
+  };
+
   render.empty = {
     search: function() {
       var div = helper.node("div|class:link-empty");
@@ -1112,14 +1258,10 @@ var link = (function() {
         bookmarks.mod.add.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
         mod.add.close();
-        render.clear();
-        render.item.all();
-        render.item.tabindex();
-        bind.sort.group();
-        bind.sort.item();
+        groupAndItems();
+        stagedLink.reset();
         control.render.dependents();
         control.render.class();
-        stagedLink.reset();
         shade.close();
         pagelock.unlock();
       };
@@ -1141,9 +1283,10 @@ var link = (function() {
       shade.open({
         action: function() {
           mod.add.close();
-          modal.close();
           stagedLink.reset();
+          autoSuggest.close();
           pagelock.unlock();
+          modal.close();
         }
       });
       stagedLink.position.destination.item = helper.e(".link-form-position").selectedIndex;
@@ -1162,29 +1305,29 @@ var link = (function() {
   };
 
   var tabindex = function() {
+    render.group.tabindex();
     render.item.tabindex();
   };
 
-  var items = function() {
-    render.clear();
-    render.item.all();
+  var groupAndItems = function() {
+    render.clear.item();
+    render.clear.group();
+    render.all();
     bind.sort.group();
     bind.sort.item();
+    render.group.tabindex();
+    render.item.tabindex();
   };
 
   var init = function() {
     mod.add.close();
-    render.group.all();
-    // render.item.all();
-    // render.area.width();
-    // render.item.tabindex();
-    // render.item.size();
-    // render.item.display.letter();
-    // render.item.display.icon();
-    // render.item.name();
-    // render.item.border();
-    bind.sort.group();
-    bind.sort.item();
+    groupAndItems();
+    render.item.size();
+    render.item.display.letter();
+    render.item.display.icon();
+    render.item.name();
+    render.item.border();
+    render.area.width();
   };
 
   // exposed methods
@@ -1194,10 +1337,11 @@ var link = (function() {
     render: render,
     add: add,
     edit: edit,
-    items: items,
     tabindex: tabindex,
+    groupAndItems: groupAndItems,
     // temp
-    stagedLink: stagedLink
+    stagedLink: stagedLink,
+    stagedGroup: stagedGroup
   };
 
 })();
