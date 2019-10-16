@@ -146,7 +146,7 @@ var bookmarks = (function() {
       mod.all[data.position.destination.group].items.splice(data.position.destination.item, 0, item);
     },
     group: function(data) {
-      var group = JSON.parse(JSON.stringify(mod.all[data.position.origin]));
+      var group = JSON.parse(JSON.stringify(data.group));
       mod.all.splice(data.position.origin, 1);
       mod.all.splice(data.position.destination, 0, group);
     }
@@ -205,10 +205,6 @@ var bookmarks = (function() {
     return mod.get(data);
   };
 
-  var edit = function(data) {
-    mod.edit(data);
-  };
-
   var sort = function(by) {
     mod.sort(by);
   };
@@ -233,7 +229,6 @@ var bookmarks = (function() {
     init: init,
     mod: mod,
     get: get,
-    edit: edit,
     sort: sort,
     count: count,
     remove: remove

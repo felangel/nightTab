@@ -37,7 +37,7 @@
 }
 
 .group-control {
-  background-color: rgb(var(--theme-accent));
+  /* background-color: rgb(var(--theme-accent)); */
   margin-bottom: 0;
   border-radius: var(--theme-radius);
   overflow: hidden;
@@ -48,7 +48,7 @@
 
 .is-link-edit .group-control {
   margin-right: 1em;
-  width: 18em;
+  width: 16em;
 }
 
 .group-control-item {
@@ -58,7 +58,9 @@
   /* border: 0; */
   /* padding: 0; */
   /* color: rgb(var(--theme-gray-02)); */
-  flex-grow: 1;
+  width: 4em;
+  flex-shrink: 0;
+  /* flex-grow: 1; */
 }
 
 .group-control-text-dark .group-control-item:focus,

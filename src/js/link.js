@@ -338,12 +338,8 @@ var link = (function() {
         stagedGroup.position.destination = stagedGroup.position.destination + 1;
         bookmarks.mod.move.group(stagedGroup);
         data.save();
-        render.clear.item();
-        render.clear.group();
-        render.all();
+        groupAndItems();
         stagedGroup.reset();
-        bind.sort.group();
-        bind.sort.item();
       },
       down: function(copyStagedGroup) {
         stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup)).group;
@@ -354,12 +350,8 @@ var link = (function() {
         };
         bookmarks.mod.move.group(stagedGroup);
         data.save();
-        render.clear.item();
-        render.clear.group();
-        render.all();
+        groupAndItems();
         stagedGroup.reset();
-        bind.sort.group();
-        bind.sort.item();
       }
     },
     link: {
@@ -372,12 +364,8 @@ var link = (function() {
         };
         bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
-        render.clear.item();
-        render.clear.group();
-        render.all();
+        groupAndItems();
         stagedLink.reset();
-        bind.sort.group();
-        bind.sort.item();
       },
       right: function(copyStagedLink) {
         stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink)).link;
@@ -385,12 +373,8 @@ var link = (function() {
         stagedLink.position.destination.item = stagedLink.position.destination.item + 1;
         bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
-        render.clear.item();
-        render.clear.group();
-        render.all();
+        groupAndItems();
         stagedLink.reset();
-        bind.sort.group();
-        bind.sort.item();
       }
     }
   };
@@ -501,7 +485,7 @@ var link = (function() {
       });
       var heading = "Edit " + stagedGroup.group.name;
       var successAction = function() {
-        bookmarks.edit(JSON.parse(JSON.stringify(stagedGroup)));
+        bookmarks.mod.edit.group(JSON.parse(JSON.stringify(stagedGroup)));
         data.save();
         groupAndItems();
         stagedGroup.reset();
@@ -716,20 +700,26 @@ var link = (function() {
       var copyStagedLink = JSON.parse(JSON.stringify(stagedLink));
 
       linkLeft.addEventListener("click", function() {
+        _previousFocus = copyStagedLink.position;
+        console.log(_previousFocus);
         render.move.link.left(copyStagedLink);
       }, false);
 
       linkRight.addEventListener("click", function() {
+        _previousFocus = copyStagedLink.position;
+        console.log(_previousFocus);
         render.move.link.right(copyStagedLink);
       }, false);
 
       linkEdit.addEventListener("click", function() {
-        // _previousFocus = stagedLink.position;
+        _previousFocus = copyStagedLink.position;
+        console.log(_previousFocus);
         render.item.edit(copyStagedLink);
       }, false);
 
       linkRemove.addEventListener("click", function() {
-        // _previousFocus = stagedLink.position;
+        _previousFocus = copyStagedLink.position;
+        console.log(_previousFocus);
         render.remove.item(copyStagedLink);
       }, false);
 
@@ -748,7 +738,7 @@ var link = (function() {
         heading = "Edit unnamed bookmark";
       };
       var successAction = function() {
-        bookmarks.edit(JSON.parse(JSON.stringify(stagedLink)));
+        bookmarks.mod.edit.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
         groupAndItems();
         stagedLink.reset();
@@ -1217,6 +1207,7 @@ var link = (function() {
   };
 
   render.previousFocus = function() {
+    console.log(_previousFocus);
     if (_previousFocus != null) {
       var linkPanelFront = helper.eA(".link-panel-front");
       if (linkPanelFront.length > 0) {
@@ -1328,6 +1319,7 @@ var link = (function() {
     render.item.name();
     render.item.border();
     render.area.width();
+    render.previousFocus();
   };
 
   // exposed methods
