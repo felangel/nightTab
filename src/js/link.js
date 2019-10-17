@@ -236,51 +236,6 @@ var link = (function() {
   var render = {};
 
   render.remove = {
-    group: function(copyStagedGroup) {
-      stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup.group));
-      stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup.position));
-      var heading;
-      if (stagedGroup.group.name != null && stagedGroup.group.name != "") {
-        heading = "Remove " + stagedGroup.group.name + " group";
-      } else {
-        heading = "Remove unnamed group";
-      };
-      var successAction = function() {
-        bookmarks.remove.group(stagedGroup);
-        data.save();
-        mod.edit.check();
-        header.render.button.edit();
-        groupAndItems();
-        render.previousFocus.previous.group(copyStagedGroup);
-        stagedGroup.reset();
-        control.render.dependents();
-        control.render.class();
-        shade.close();
-        pagelock.unlock();
-      };
-      var cancelAction = function() {
-        stagedGroup.reset();
-        shade.close();
-        pagelock.unlock();
-      };
-      modal.open({
-        heading: heading,
-        content: "Are you sure you want to remove this group and all the bookmarks within? This can not be undone.",
-        successAction: successAction,
-        cancelAction: cancelAction,
-        actionText: "Remove",
-        size: "small"
-      });
-      shade.open({
-        action: function() {
-          stagedGroup.reset();
-          autoSuggest.close();
-          pagelock.unlock();
-          modal.close();
-        }
-      });
-      pagelock.lock();
-    },
     item: function(copyStagedLink) {
       stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink.link));
       stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink.position));
@@ -461,7 +416,7 @@ var link = (function() {
 
       var copyStagedGroup = JSON.parse(JSON.stringify(stagedGroup));
 
-      itemGroupControlItemUp.addEventListener("click", function() {
+      itemGroupControlItemUp.addEventListener("click", function(event) {
         render.move.group.up(copyStagedGroup);
       }, false);
 
@@ -474,7 +429,7 @@ var link = (function() {
       }, false);
 
       itemGroupControlItemRemove.addEventListener("click", function() {
-        render.remove.group(copyStagedGroup);
+        render.group.remove(copyStagedGroup);
       }, false);
 
       return group;
@@ -518,6 +473,51 @@ var link = (function() {
           modal.close();
         }
       });
+    },
+    remove: function(copyStagedGroup) {
+      stagedGroup.group = JSON.parse(JSON.stringify(copyStagedGroup.group));
+      stagedGroup.position = JSON.parse(JSON.stringify(copyStagedGroup.position));
+      var heading;
+      if (stagedGroup.group.name != null && stagedGroup.group.name != "") {
+        heading = "Remove " + stagedGroup.group.name + " group";
+      } else {
+        heading = "Remove unnamed group";
+      };
+      var successAction = function() {
+        bookmarks.remove.group(stagedGroup);
+        data.save();
+        mod.edit.check();
+        header.render.button.edit();
+        groupAndItems();
+        render.previousFocus.previous.group(copyStagedGroup);
+        stagedGroup.reset();
+        control.render.dependents();
+        control.render.class();
+        shade.close();
+        pagelock.unlock();
+      };
+      var cancelAction = function() {
+        stagedGroup.reset();
+        shade.close();
+        pagelock.unlock();
+      };
+      modal.open({
+        heading: heading,
+        content: "Are you sure you want to remove this group and all the bookmarks within? This can not be undone.",
+        successAction: successAction,
+        cancelAction: cancelAction,
+        actionText: "Remove",
+        size: "small"
+      });
+      shade.open({
+        action: function() {
+          stagedGroup.reset();
+          autoSuggest.close();
+          pagelock.unlock();
+          modal.close();
+        }
+      });
+      pagelock.lock();
     },
     tabindex: function() {
       var allGroupControlItem = helper.eA(".group-control-item");
@@ -1206,17 +1206,25 @@ var link = (function() {
     previous: {
       group: function(copyStagedGroup) {
         var allGroup = helper.eA(".group");
-        if (allGroup.length > 0 && copyStagedGroup.position.origin >= 0) {
-          allGroup[copyStagedGroup.position.origin - 1].querySelector(".group-control-item").focus();
+        var target = copyStagedGroup.position.origin - 1;
+        if (target < 0) {
+          target = 0;
+        };
+        if (allGroup.length > 0) {
+          allGroup[target].querySelector(".group-control-item-up").focus();
         } else {
           helper.e("body").focus();
         };
       },
       item: function(copyStagedLink) {
         var allGroup = helper.eA(".group");
-        var allLinkPanelFront = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-panel-front");
-        if (allLinkPanelFront.length > 0 && copyStagedLink.position.origin.item >= 0) {
-          allLinkPanelFront[copyStagedLink.position.origin.item - 1].focus();
+        var allLinkItem = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-item");
+        var target = copyStagedLink.position.origin.item - 1;
+        if (target < 0) {
+          target = 0;
+        };
+        if (allLinkItem.length > 0) {
+          allLinkItem[target].querySelector(".link-control-item-left").focus();
         } else {
           helper.e("body").focus();
         };
@@ -1225,72 +1233,31 @@ var link = (function() {
     next: {
       group: function(copyStagedGroup) {
         var allGroup = helper.eA(".group");
-        if (allGroup.length > 0 && copyStagedGroup.position.origin >= 0) {
-          allGroup[copyStagedGroup.position.origin + 1].querySelector(".group-control-item").focus();
+        var target = copyStagedGroup.position.origin + 1;
+        if (target < allGroup.length - 1) {
+          target = allGroup.length - 1;
+        };
+        if (allGroup.length > 0) {
+          allGroup[target].querySelector(".group-control-item-down").focus();
         } else {
           helper.e("body").focus();
         };
       },
       item: function(copyStagedLink) {
         var allGroup = helper.eA(".group");
-        var allLinkPanelFront = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-panel-front");
-        if (allLinkPanelFront.length > 0 && copyStagedLink.position.origin.item >= 0) {
-          allLinkPanelFront[copyStagedLink.position.origin.item + 1].focus();
+        var allLinkItem = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-item");
+        var target = copyStagedLink.position.origin.item + 1;
+        if (target > allLinkItem.length - 1) {
+          target = allLinkItem.length - 1;
+        };
+        if (allLinkItem.length > 0) {
+          allLinkItem[target].querySelector(".link-control-item-right").focus();
         } else {
           helper.e("body").focus();
         };
       }
-    },
-    current: function() {
-
-    },
-    focus: {
-      group: function() {
-        var allGroup = helper.eA(".group");
-        if (allGroup.length > 0) {
-          allGroup[_previousFocus.destination.group].querySelector(".group-control-item").focus();
-        } else {
-          if (allGroup.length > 0) {
-            allGroup[0].querySelector(".group-control-item").focus();
-          } else {
-            helper.e("body").focus();
-          };
-        };
-        _previousFocus = null;
-      },
-      link: function() {
-        var allGroup = helper.eA(".group");
-        var allLinkPanelFront = allGroup[_previousFocus.origin.group].querySelectorAll(".link-panel-front");
-        if (allLinkPanelFront.length > 0) {
-          allLinkPanelFront[_previousFocus.origin.item].focus();
-        } else {
-          if (allLinkPanelFront.length > 0) {
-            allLinkPanelFront[0].focus();
-          } else {
-            helper.e("body").focus();
-          };
-        };
-        _previousFocus = null;
-      }
     }
   };
-
-  // render.previousFocus = function() {
-  //   console.log(_previousFocus);
-  //   if (_previousFocus != null) {
-  //     var linkPanelFront = helper.eA(".link-panel-front");
-  //     if (linkPanelFront.length > 0) {
-  //       if (_previousFocus >= 0) {
-  //         linkPanelFront[_previousFocus].focus();
-  //       } else {
-  //         linkPanelFront[0].focus();
-  //       };
-  //     } else {
-  //       helper.e("body").focus();
-  //     };
-  //     _previousFocus = null;
-  //   };
-  // };
 
   render.autoSuggestIconAction = function(autoSuggestData) {
     stagedLink.link.icon.label = autoSuggestData.label;
