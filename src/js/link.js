@@ -235,54 +235,6 @@ var link = (function() {
 
   var render = {};
 
-  render.remove = {
-    item: function(copyStagedLink) {
-      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink.link));
-      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink.position));
-      var heading;
-      if (stagedLink.link.name != null && stagedLink.link.name != "") {
-        heading = "Remove " + stagedLink.link.name + " bookmark";
-      } else {
-        heading = "Remove unnamed bookmark";
-      };
-      var successAction = function() {
-        bookmarks.remove.link(stagedLink);
-        data.save();
-        mod.edit.check();
-        header.render.button.edit();
-        groupAndItems();
-        render.previousFocus.previous.item(copyStagedLink);
-        stagedLink.reset();
-        control.render.dependents();
-        control.render.class();
-        shade.close();
-        pagelock.unlock();
-      };
-      var cancelAction = function() {
-        stagedLink.reset();
-        shade.close();
-        pagelock.unlock();
-      };
-      modal.open({
-        heading: heading,
-        content: "Are you sure you want to remove this bookmark? This can not be undone.",
-        successAction: successAction,
-        cancelAction: cancelAction,
-        actionText: "Remove",
-        size: "small"
-      });
-      shade.open({
-        action: function() {
-          stagedLink.reset();
-          autoSuggest.close();
-          pagelock.unlock();
-          modal.close();
-        }
-      });
-      pagelock.lock();
-    }
-  };
-
   render.move = {
     group: {
       up: function(copyStagedGroup) {
@@ -295,7 +247,7 @@ var link = (function() {
         bookmarks.mod.move.group(stagedGroup);
         data.save();
         groupAndItems();
-        render.previousFocus.previous.group(copyStagedGroup);
+        render.previousFocus.group.previous.up(copyStagedGroup);
         stagedGroup.reset();
       },
       down: function(copyStagedGroup) {
@@ -305,7 +257,7 @@ var link = (function() {
         bookmarks.mod.move.group(stagedGroup);
         data.save();
         groupAndItems();
-        render.previousFocus.next.group(copyStagedGroup);
+        render.previousFocus.group.next.down(copyStagedGroup);
         stagedGroup.reset();
       }
     },
@@ -320,7 +272,7 @@ var link = (function() {
         bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
         groupAndItems();
-        render.previousFocus.previous.item(copyStagedLink);
+        render.previousFocus.item.previous.left(copyStagedLink);
         stagedLink.reset();
       },
       right: function(copyStagedLink) {
@@ -330,7 +282,7 @@ var link = (function() {
         bookmarks.mod.move.link(JSON.parse(JSON.stringify(stagedLink)));
         data.save();
         groupAndItems();
-        render.previousFocus.next.item(copyStagedLink);
+        render.previousFocus.item.next.right(copyStagedLink);
         stagedLink.reset();
       }
     }
@@ -489,7 +441,7 @@ var link = (function() {
         mod.edit.check();
         header.render.button.edit();
         groupAndItems();
-        render.previousFocus.previous.group(copyStagedGroup);
+        render.previousFocus.group.previous.remove(copyStagedGroup);
         stagedGroup.reset();
         control.render.dependents();
         control.render.class();
@@ -717,7 +669,7 @@ var link = (function() {
 
       linkRemove.addEventListener("click", function() {
         _previousFocus = copyStagedLink.position;
-        render.remove.item(copyStagedLink);
+        render.item.remove(copyStagedLink);
       }, false);
 
       return linkItem;
@@ -766,6 +718,51 @@ var link = (function() {
           modal.close();
         }
       });
+    },
+    remove: function(copyStagedLink) {
+      stagedLink.link = JSON.parse(JSON.stringify(copyStagedLink.link));
+      stagedLink.position = JSON.parse(JSON.stringify(copyStagedLink.position));
+      var heading;
+      if (stagedLink.link.name != null && stagedLink.link.name != "") {
+        heading = "Remove " + stagedLink.link.name + " bookmark";
+      } else {
+        heading = "Remove unnamed bookmark";
+      };
+      var successAction = function() {
+        bookmarks.remove.link(stagedLink);
+        data.save();
+        mod.edit.check();
+        header.render.button.edit();
+        groupAndItems();
+        render.previousFocus.item.previous.remove(copyStagedLink);
+        stagedLink.reset();
+        control.render.dependents();
+        control.render.class();
+        shade.close();
+        pagelock.unlock();
+      };
+      var cancelAction = function() {
+        stagedLink.reset();
+        shade.close();
+        pagelock.unlock();
+      };
+      modal.open({
+        heading: heading,
+        content: "Are you sure you want to remove this bookmark? This can not be undone.",
+        successAction: successAction,
+        cancelAction: cancelAction,
+        actionText: "Remove",
+        size: "small"
+      });
+      shade.open({
+        action: function() {
+          stagedLink.reset();
+          autoSuggest.close();
+          pagelock.unlock();
+          modal.close();
+        }
+      });
+      pagelock.lock();
     },
     display: {
       letter: function() {
@@ -1203,58 +1200,91 @@ var link = (function() {
   };
 
   render.previousFocus = {
-    previous: {
-      group: function(copyStagedGroup) {
-        var allGroup = helper.eA(".group");
-        var target = copyStagedGroup.position.origin - 1;
-        if (target < 0) {
-          target = 0;
-        };
-        if (allGroup.length > 0) {
-          allGroup[target].querySelector(".group-control-item-up").focus();
-        } else {
-          helper.e("body").focus();
-        };
+    group: {
+      previous: {
+        remove: function(copyStagedGroup) {
+          var allGroup = helper.eA(".group");
+          var target = copyStagedGroup.position.origin - 1;
+          if (target < 0) {
+            target = 0;
+          };
+          if (allGroup.length > 0) {
+            allGroup[target].querySelector(".group-control-item-remove").focus();
+          } else {
+            helper.e("body").focus();
+          };
+        },
+        up: function(copyStagedGroup) {
+          var allGroup = helper.eA(".group");
+          var target = copyStagedGroup.position.origin - 1;
+          if (target < 0) {
+            target = 0;
+          };
+          if (allGroup.length > 0) {
+            allGroup[target].querySelector(".group-control-item-up").focus();
+          } else {
+            helper.e("body").focus();
+          };
+        }
       },
-      item: function(copyStagedLink) {
-        var allGroup = helper.eA(".group");
-        var allLinkItem = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-item");
-        var target = copyStagedLink.position.origin.item - 1;
-        if (target < 0) {
-          target = 0;
-        };
-        if (allLinkItem.length > 0) {
-          allLinkItem[target].querySelector(".link-control-item-left").focus();
-        } else {
-          helper.e("body").focus();
-        };
+      next: {
+        down: function(copyStagedGroup) {
+          var allGroup = helper.eA(".group");
+          var target = copyStagedGroup.position.origin + 1;
+          if (target > allGroup.length - 1) {
+            target = allGroup.length - 1;
+          };
+          if (allGroup.length > 0) {
+            allGroup[target].querySelector(".group-control-item-down").focus();
+          } else {
+            helper.e("body").focus();
+          };
+        }
       }
     },
-    next: {
-      group: function(copyStagedGroup) {
-        var allGroup = helper.eA(".group");
-        var target = copyStagedGroup.position.origin + 1;
-        if (target < allGroup.length - 1) {
-          target = allGroup.length - 1;
-        };
-        if (allGroup.length > 0) {
-          allGroup[target].querySelector(".group-control-item-down").focus();
-        } else {
-          helper.e("body").focus();
-        };
+    item: {
+      previous: {
+        remove: function(copyStagedLink) {
+          var allGroup = helper.eA(".group");
+          var allLinkItem = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-item");
+          var target = copyStagedLink.position.origin.item - 1;
+          if (target < 0) {
+            target = 0;
+          };
+          if (allLinkItem.length > 0) {
+            allLinkItem[target].querySelector(".link-control-item-remove").focus();
+          } else {
+            helper.e("body").focus();
+          };
+        },
+        left: function(copyStagedLink) {
+          var allGroup = helper.eA(".group");
+          var allLinkItem = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-item");
+          var target = copyStagedLink.position.origin.item - 1;
+          if (target < 0) {
+            target = 0;
+          };
+          if (allLinkItem.length > 0) {
+            allLinkItem[target].querySelector(".link-control-item-left").focus();
+          } else {
+            helper.e("body").focus();
+          };
+        }
       },
-      item: function(copyStagedLink) {
-        var allGroup = helper.eA(".group");
-        var allLinkItem = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-item");
-        var target = copyStagedLink.position.origin.item + 1;
-        if (target > allLinkItem.length - 1) {
-          target = allLinkItem.length - 1;
-        };
-        if (allLinkItem.length > 0) {
-          allLinkItem[target].querySelector(".link-control-item-right").focus();
-        } else {
-          helper.e("body").focus();
-        };
+      next: {
+        right: function(copyStagedLink) {
+          var allGroup = helper.eA(".group");
+          var allLinkItem = allGroup[copyStagedLink.position.origin.group].querySelectorAll(".link-item");
+          var target = copyStagedLink.position.origin.item + 1;
+          if (target > allLinkItem.length - 1) {
+            target = allLinkItem.length - 1;
+          };
+          if (allLinkItem.length > 0) {
+            allLinkItem[target].querySelector(".link-control-item-right").focus();
+          } else {
+            helper.e("body").focus();
+          };
+        }
       }
     }
   };
